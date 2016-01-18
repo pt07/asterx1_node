@@ -15,7 +15,9 @@ else()
 endif()
 
 ## Find catkin macros and libraries
-find_package(catkin REQUIRED
+find_package(catkin REQUIRED COMPONENTS
+  message_generation #TODO forse non serve
+  sensor_msgs
   roscpp
   std_msgs
 )
@@ -48,17 +50,17 @@ find_package(catkin REQUIRED
 ##     find_package(catkin REQUIRED COMPONENTS ...)
 ##   * add "message_runtime" and every package in MSG_DEP_SET to
 ##     catkin_package(CATKIN_DEPENDS ...)
+#TODO catkin_package(CATKIN_DEPENDS message_runtime)
 ##   * uncomment the add_*_files sections below as needed
 ##     and list every .msg/.srv/.action file to be processed
 ##   * uncomment the generate_messages entry below
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+#add_message_files(
+#  FILES
+#  ../../iri_asterx1_gps/msg/GPS_time.msg
+#)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -75,10 +77,12 @@ find_package(catkin REQUIRED
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
-# )
+generate_messages(
+  DEPENDENCIES
+  sensor_msgs
+  iri_asterx1_gps
+  std_msgs  # Or other packages containing msgs
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -109,6 +113,8 @@ find_package(catkin REQUIRED
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
+catkin_package(CATKIN_DEPENDS message_runtime )
+
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES asterx1_node
@@ -139,16 +145,11 @@ include_directories(
 
 ## cpp executable
 add_executable(raw_receiver_node ${SRCS_RAW_REC} )
-target_link_libraries(raw_receiver_node)
+target_link_libraries(raw_receiver_node ${catkin_LIBRARIES})
 
 
 
-
-
-
-
-
-
-
-
+add_executable(talker src/talker.cpp)
+target_link_libraries(talker ${catkin_LIBRARIES})
+add_dependencies(talker beginner_tutorials_generate_messages_cpp)
 

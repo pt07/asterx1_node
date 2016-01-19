@@ -77,12 +77,12 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate added messages and services with any dependencies listed here
-generate_messages(
-  DEPENDENCIES
-  sensor_msgs
-  iri_asterx1_gps
-  std_msgs  # Or other packages containing msgs
-)
+#generate_messages( #TODO serve? ora funziona, ma magari perche ho gia compilato i pacchetti
+#  DEPENDENCIES
+  #sensor_msgs SERVE?
+#  iri_asterx1_gps
+#  std_msgs  # Or other packages containing msgs
+#)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##

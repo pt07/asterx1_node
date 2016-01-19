@@ -4,8 +4,8 @@
 
 #include <ros/ros.h>
 
-#include "std_msgs/String.h"
-#include "iri_asterx1_gps/GPS_time.h"
+//#include "std_msgs/String.h" //
+#include "iri_asterx1_gps/GPS_meas.h"
 
 
 class RawReceiverNode
@@ -14,15 +14,14 @@ protected:
     // ROS node handle
     ros::NodeHandle nh;
 
-    // Subscriber (measurements)
-    ros::Subscriber obsSub;
+    // Subscribers
+    ros::Subscriber obsSub; // observations (measurements) subscriber
 
 public:
     RawReceiverNode();
     ~RawReceiverNode();
 
-    void obsCallback(const iri_asterx1_gps::GPS_time::ConstPtr& msg);//TODO mettici messaggio personalizzato
-                        //  iri_asterx1_gps/GPS_nav
+    void obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr& msg);
 
 protected:
     void process();

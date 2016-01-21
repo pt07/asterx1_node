@@ -20,6 +20,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   roscpp
   std_msgs
+  #gpstk REQUIRED TODO serve qualcosa del genere!!!!
 )
 
 ## System dependencies are found with CMake's conventions
@@ -145,7 +146,7 @@ include_directories(
 
 ## cpp executable
 add_executable(raw_receiver_node ${SRCS_RAW_REC} )
-target_link_libraries(raw_receiver_node ${catkin_LIBRARIES})
+target_link_libraries(raw_receiver_node ${catkin_LIBRARIES} gpstk)
 
 
 

@@ -27,6 +27,9 @@ void RawReceiverNode::obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr& msg
 {
     if(numNavMsgRec>=4)
     {
+        prnVec.clear();
+        rangeVec.clear();
+
         std::cout << "New observations at tow: " << msg->time_stamp.tow << std::endl;
 
         for (int i = 0; i < msg->type1_info.size(); ++i)
@@ -203,16 +206,25 @@ gpstk::CommonTime RawReceiverNode::getTime(long tow, int wnc)
 {
     //TODO sta conversione è fatta a caso
 
+//    std::cout << "tow: " << tow << "\twnc: " << wnc << std::endl;
+
     gpstk::CommonTime ts(gpstk::TimeSystem::GPS);
 
-    double fsod = (tow % 1000)/1000;
+    double fsod = 1.0*(tow % 1000)/1000;
     tow /= 1000;
     long sod = tow % (24*60*60);
-    long day = tow / (24*60*60) + 7*wnc;
+    long day = tow / (24*60*60)/* + 7*wnc*/;
+
+
+//    std::cout << "fsod: " << fsod
+//              << "  sod: " << sod
+//              << "  day: " << day << std::endl;
 
     ts.set(day, sod, fsod, gpstk::TimeSystem::GPS);
 
-
+    std::cout << "ts: " << ts.asString() << std::endl;
+//    std::cout << "ts -- sod: " << ts.getSecondOfDay() << std::endl;
+//    std::cout << "ts -- day: " << ts.getDays() << std::endl;
 
     return ts;
 }

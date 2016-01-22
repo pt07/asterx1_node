@@ -53,57 +53,13 @@ void RawReceiverNode::obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr& msg
         raimSolver.RMSLimit = 3e6;
 
 
-        try {
-
-            raimSolver.RAIMCompute(
-                    getTime(msg->time_stamp.tow,
-                            msg->time_stamp.wnc), //TODO controlla che sia questo il tempo richiesto!!
-                    prnVec,
-                    rangeVec,
-                    bcestore,
-                    tropModelPtr);
-
-            if (raimSolver.isValid())
-            {
-                // Vector "Solution" holds the coordinates, expressed in meters
-                // in an Earth Centered, Earth Fixed (ECEF) reference frame.
-                std::cout << std::setprecision(12) << raimSolver.Solution[0] << " ";
-                std::cout << raimSolver.Solution[1] << " ";
-                std::cout << raimSolver.Solution[2];
-                std::cout << " --> LLR: ";
-
-                gpstk::Triple sol_xyz, sol_llr;
-                sol_xyz[0] = raimSolver.Solution[0];
-                sol_xyz[1] = raimSolver.Solution[1];
-                sol_xyz[2] = raimSolver.Solution[2];
-                gpstk::WGS84Ellipsoid WGS84;
-                double AEarth = WGS84.a();
-                double eccSquared = WGS84.eccSquared();
-
-                gpstk::Position::convertCartesianToGeodetic(sol_xyz, sol_llr, AEarth, eccSquared);
-
-                std::cout << sol_llr[0] << " ";
-                std::cout << sol_llr[1] << " ";
-                std::cout << sol_llr[2];
-                std::cout << std::endl;
-
-            }
-            else
-            {
-                std::cout << "raimSolver NOT Valid" << std::endl;
-                numRAIMNotValid++;
-
-
-
-                if(numRAIMNotValid>10)
-                    exit(0);
-            }
-        }
-        catch (gpstk::Exception& e)
-        {
-            std::cerr << e << std::endl;
-            exit(0);
-        }
+        /*
+         * DO the math
+         */
+        if(calcSatPosition)
+            calculateSatPosition(msg);
+        else
+            calculateFix(msg);
 
 
     } else {
@@ -227,4 +183,88 @@ gpstk::CommonTime RawReceiverNode::getTime(long tow, int wnc)
 //    std::cout << "ts -- day: " << ts.getDays() << std::endl;
 
     return ts;
+}
+
+
+void RawReceiverNode::calculateSatPosition(const iri_asterx1_gps::GPS_meas::ConstPtr& msg)
+{
+    int ret;
+    gpstk::Matrix<double> calcPos;
+
+    ret = raimSolver.PrepareAutonomousSolution(getTime(msg->time_stamp.tow,
+                                                       msg->time_stamp.wnc), //questo e' il TOA (time of arrival), cioe' l'istante nel quale voglio predire la posizione dei satelliti
+                                               prnVec,
+                                               rangeVec,
+                                               bcestore,
+                                               calcPos); //satellite positions at transmit time, and the corrected pseudorange
+    //Return values:  0 ok
+    //               -4 ephemeris not found for all the satellites
+
+    //NB: verify that the number of good entries (Satellite[.] > 0) is > 4 before proceeding
+
+    if (ret!=0)
+        std::cout << "Return value of raimSolver2.PrepareAutonomousSolution:" << ret << std::endl;
+
+    for (size_t i = 0; i < prnVec.size(); ++i)
+    {
+        std::cout << "posizioni!  (" << calcPos[i][0] << ", " << calcPos[i][1] << ", " << calcPos[i][2] << ") ";
+        std::cout << " new pr = " << calcPos[i][3] << std::endl;
+    }
+
+}
+
+void RawReceiverNode::calculateFix(const iri_asterx1_gps::GPS_meas::ConstPtr& msg)
+{
+
+    try {
+
+        raimSolver.RAIMCompute(
+                getTime(msg->time_stamp.tow,
+                        msg->time_stamp.wnc), //TODO controlla che sia questo il tempo richiesto!!
+                prnVec,
+                rangeVec,
+                bcestore,
+                tropModelPtr);
+
+        if (raimSolver.isValid())
+        {
+            // Vector "Solution" holds the coordinates, expressed in meters
+            // in an Earth Centered, Earth Fixed (ECEF) reference frame.
+            std::cout << std::setprecision(12) << raimSolver.Solution[0] << " ";
+            std::cout << raimSolver.Solution[1] << " ";
+            std::cout << raimSolver.Solution[2];
+            std::cout << " --> LLR: ";
+
+            gpstk::Triple sol_xyz, sol_llr;
+            sol_xyz[0] = raimSolver.Solution[0];
+            sol_xyz[1] = raimSolver.Solution[1];
+            sol_xyz[2] = raimSolver.Solution[2];
+            gpstk::WGS84Ellipsoid WGS84;
+            double AEarth = WGS84.a();
+            double eccSquared = WGS84.eccSquared();
+
+            gpstk::Position::convertCartesianToGeodetic(sol_xyz, sol_llr, AEarth, eccSquared);
+
+            std::cout << sol_llr[0] << " ";
+            std::cout << sol_llr[1] << " ";
+            std::cout << sol_llr[2];
+            std::cout << std::endl;
+
+        }
+        else
+        {
+            std::cout << "raimSolver NOT Valid" << std::endl;
+            numRAIMNotValid++;
+
+
+
+            if(numRAIMNotValid>10)
+                exit(0);
+        }
+    }
+    catch (gpstk::Exception& e)
+    {
+        std::cerr << e << std::endl;
+        exit(0);
+    }
 }

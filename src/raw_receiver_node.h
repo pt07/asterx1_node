@@ -64,6 +64,14 @@ protected:
     int numNavMsgRec;
     int numRAIMNotValid;
 
+
+    /*
+     * 2 modalità:
+     *      calcSatPosition = true -->  calcola la posizione dei satelliti
+     *      calcSatPosition = false --> calcola un gps fix
+     */
+    bool calcSatPosition = true;
+
 public:
     RawReceiverNode();
     ~RawReceiverNode();
@@ -73,6 +81,9 @@ public:
 
 protected:
     gpstk::CommonTime getTime(long tow, int wnc);
+
+    void calculateFix(const iri_asterx1_gps::GPS_meas::ConstPtr& msg);
+    void calculateSatPosition(const iri_asterx1_gps::GPS_meas::ConstPtr& msg);
 
 };
 #endif

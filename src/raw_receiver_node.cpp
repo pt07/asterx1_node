@@ -214,5 +214,5 @@ gpstk::CommonTime RawReceiverNode::getTime(long tow, int wnc)
 
 
 
-    return gpstk::CommonTime(gpstk::TimeSystem());
+    return ts;
 }

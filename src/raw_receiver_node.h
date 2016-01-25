@@ -21,6 +21,10 @@
 #include "WGS84Ellipsoid.hpp"
 // To create satellites with ID and satellite system (GPS in our case)
 #include <SatID.hpp>
+//tentativo con rinex nav data per le eph. se non funziona, togli sto include
+#include "Rinex3NavData.hpp"
+//vedi se è meglio usare common time o civil time, in caso togli
+//#include "CivilTime.hpp"
 
 /**************************
  *      ROS includes      *
@@ -78,10 +82,9 @@ public:
 
     void obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr& msg);
     void navCallback(const iri_asterx1_gps::GPS_nav::ConstPtr& msg);
+    void navCallback2(const iri_asterx1_gps::GPS_nav::ConstPtr& msg);
 
 protected:
-    gpstk::CommonTime getTime(long tow, int wnc);
-
     void calculateFix(const iri_asterx1_gps::GPS_meas::ConstPtr& msg);
     void calculateSatPosition(const iri_asterx1_gps::GPS_meas::ConstPtr& msg);
 

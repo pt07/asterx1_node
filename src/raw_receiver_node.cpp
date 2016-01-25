@@ -73,9 +73,94 @@ void RawReceiverNode::obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr& msg
 void RawReceiverNode::navCallback(const iri_asterx1_gps::GPS_nav::ConstPtr& msg)
 {
     std::cout << "### NAV data for sat " << (short)msg->sat_id
-              << " at tow: " << msg->time_stamp.tow
-              << "\t| iodt: " << (int)msg->iodc
-              << std::endl;
+    << " at tow: " << msg->time_stamp.tow
+    << "\t| iodt: " << (int)msg->iodc
+    << std::endl;
+
+
+//    gpstk::Rinex3NavData eph(EngEphemeris); TODO posso fare cosi!! pero engEphemeris è deprecato
+
+    gpstk::Rinex3NavData e;
+
+    //TODO vedi se basta howtime + weeknum o se serve anche questo
+//    e.time = getTime(msg->time_stamp.tow, msg->time_stamp.wnc);
+
+    //TODo mettere un tempo decente
+    e.time = gpstk::CivilTime(2016, 1, 20, 14, 53, 8, gpstk::TimeSystem::GPS);
+
+    e.satSys = "G";
+    e.PRNID = msg->sat_id;
+
+    e.sat = gpstk::RinexSatID((short)msg->sat_id, gpstk::SatID::systemGPS);
+    e.HOWtime = (int)msg->time_stamp.tow/1000;
+    e.weeknum = msg->time_stamp.wnc;
+    e.accuracy = 1;//***************************************
+    e.health = (short)msg->health;
+    e.codeflgs = msg->ca_or_pon_l2;//***********
+    e.L2Pdata = msg->l2_data_flag;
+    e.IODC = (double)msg->iodc;
+    e.IODE = (double)msg->iode2;
+    e.Toc = msg->t_oc;
+    e.af0 = msg->a_f0;
+    e.af1 = msg->a_f1;
+    e.af2 = msg->a_f2;
+    e.Tgd = msg->t_gd;
+    e.Tgd2 = 0.0;
+    e.Cuc = msg->c_uc;
+    e.Cus = msg->c_us;
+    e.Crc = msg->c_rc;
+    e.Crs = msg->c_rs;
+    e.Cic = msg->c_ic;
+    e.Cis = msg->c_is;
+    e.Toe = msg->t_oe;
+    e.M0 = msg->m_0;
+    e.dn = msg->delta_n;
+    e.ecc = msg->e;
+    e.Ahalf = msg->sqrt_a;
+    e.OMEGA0 = msg->omega_0;
+    e.i0 = msg->i_0;
+    e.w = msg->omega;
+    e.OMEGAdot = msg->omega_dot;
+    e.idot = msg->i_dot;
+    e.fitint = msg->fit_int_flag;//******************
+
+
+    try
+    {
+        e.dump(std::cout);
+        std::cout << "ASD " << std::endl;
+        // Add the ephemeris just created to the ephemerides store
+        bcestore.addEphemeris(e);
+        std::cout << "ASD 2" << std::endl;
+
+        numNavMsgRec++;
+
+    }
+    catch(gpstk::Exception& e)
+    {
+        std::cerr << e << std::endl;
+        exit(0);
+    }
+    catch (...)
+    {
+        std::cerr << "Caught an unexpected exception." << std::endl;
+        exit(0);
+    }
+
+}
+
+/*
+ * TODO finish the filling part and test it
+ *
+ * questa è quella con addEphemeris(GPSEphemeris).
+ * faccio un tentativo con addEphemeris(RinexNavData) prima
+ */
+void RawReceiverNode::navCallback2(const iri_asterx1_gps::GPS_nav::ConstPtr& msg)
+{
+    std::cout << "### NAV data for sat " << (short)msg->sat_id
+    << " at tow: " << msg->time_stamp.tow
+    << "\t| iodt: " << (int)msg->iodc
+    << std::endl;
 
 
     gpstk::GPSEphemeris eph;
@@ -92,16 +177,16 @@ void RawReceiverNode::navCallback(const iri_asterx1_gps::GPS_nav::ConstPtr& msg)
     eph.HOWtime = (int)msg->time_stamp.tow /1000;
     eph.IODE = msg->iode2; //******
     eph.IODC = msg->iodc;
-    eph.health = msg->health;
+    eph.health = (short)msg->health;
     eph.accuracyFlag = msg->ura;//*****************
 //    eph.accuracy = msg->;
-    eph.Tgd = msg->t_gd;//***********
+    eph.Tgd = msg->t_gd;
 //    eph.codeflags = msg->;
     eph.L2Pdata = msg->l2_data_flag;
 //    eph.fitDuration = msg->;
 //    eph.fitint = msg->;
 
-    eph.satID.id = msg->sat_id;
+    eph.satID.id = (short)msg->sat_id;
     eph.satID.system = gpstk::SatID::systemGPS;
 
 //    eph.obsID = msg->;Defines carrier and tracking code.
@@ -116,7 +201,7 @@ void RawReceiverNode::navCallback(const iri_asterx1_gps::GPS_nav::ConstPtr& msg)
 //    eph.A = msg->;Semi-major axis (m)
     eph.OMEGA0 = msg->omega_0;
     eph.i0 = msg->i_0;
-//    eph.w = msg->;Argument of perigee (rad)
+    eph.w = msg->omega;
     eph.OMEGAdot = msg->omega_dot;
     eph.idot = msg->i_dot;
 //    eph.dndot = msg->; NON C'È
@@ -141,7 +226,6 @@ void RawReceiverNode::navCallback(const iri_asterx1_gps::GPS_nav::ConstPtr& msg)
     uint32 t_oc
     float64 sqrt_a
     uint32 t_oe
-    float64 omega
     uint16 wnt_oc
     uint16 wnt_oe
 */
@@ -151,38 +235,10 @@ void RawReceiverNode::navCallback(const iri_asterx1_gps::GPS_nav::ConstPtr& msg)
     // Add the ephemeris just created to the ephemerides store
     bcestore.addEphemeris(eph);
 
+    std::cout << "ASD " << std::endl;
+    std::cout << eph.asString() << std::endl;
+
     numNavMsgRec++;
-}
-
-/**
- * tow: time of week in milliseconds
- * wnc: week number count
- */
-gpstk::CommonTime RawReceiverNode::getTime(long tow, int wnc)
-{
-    //TODO sta conversione è fatta a caso
-
-//    std::cout << "tow: " << tow << "\twnc: " << wnc << std::endl;
-
-    gpstk::CommonTime ts(gpstk::TimeSystem::GPS);
-
-    double fsod = 1.0*(tow % 1000)/1000;
-    tow /= 1000;
-    long sod = tow % (24*60*60);
-    long day = tow / (24*60*60)/* + 7*wnc*/;
-
-
-//    std::cout << "fsod: " << fsod
-//              << "  sod: " << sod
-//              << "  day: " << day << std::endl;
-
-    ts.set(day, sod, fsod, gpstk::TimeSystem::GPS);
-
-    std::cout << "ts: " << ts.asString() << std::endl;
-//    std::cout << "ts -- sod: " << ts.getSecondOfDay() << std::endl;
-//    std::cout << "ts -- day: " << ts.getDays() << std::endl;
-
-    return ts;
 }
 
 
@@ -190,9 +246,8 @@ void RawReceiverNode::calculateSatPosition(const iri_asterx1_gps::GPS_meas::Cons
 {
     int ret;
     gpstk::Matrix<double> calcPos;
-
-    ret = raimSolver.PrepareAutonomousSolution(getTime(msg->time_stamp.tow,
-                                                       msg->time_stamp.wnc), //questo e' il TOA (time of arrival), cioe' l'istante nel quale voglio predire la posizione dei satelliti
+//TODO tempo da cambiare
+    ret = raimSolver.PrepareAutonomousSolution(gpstk::CivilTime(2016, 1, 20, 14, 53, 8, gpstk::TimeSystem::GPS), //questo e' il TOA (time of arrival), cioe' l'istante nel quale voglio predire la posizione dei satelliti
                                                prnVec,
                                                rangeVec,
                                                bcestore,
@@ -219,8 +274,8 @@ void RawReceiverNode::calculateFix(const iri_asterx1_gps::GPS_meas::ConstPtr& ms
     try {
 
         raimSolver.RAIMCompute(
-                getTime(msg->time_stamp.tow,
-                        msg->time_stamp.wnc), //TODO controlla che sia questo il tempo richiesto!!
+                //TODO tempo da cambiare
+                gpstk::CivilTime(2016, 1, 20, 14, 53, 8, gpstk::TimeSystem::GPS), //TODO controlla che sia questo il tempo richiesto!!
                 prnVec,
                 rangeVec,
                 bcestore,

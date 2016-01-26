@@ -20,8 +20,15 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   roscpp
   std_msgs
-  #gpstk REQUIRED TODO serve qualcosa del genere!!!!
 )
+
+find_package(iriutils REQUIRED)
+find_package(asterx1_gps REQUIRED)
+
+#TODO fare in modo che gpstk sia required
+FIND_LIBRARY(gpstk_LIBRARY REQUIRED
+        NAMES gpstk
+        PATHS /usr/lib /usr/local/lib)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)

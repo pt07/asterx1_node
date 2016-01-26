@@ -4,7 +4,7 @@
 
 int main(int argc, char **argv)
 {
-    std::cout << "Ciao\n";
+    std::cout << "\n\n\t\t\tListening...\n\n\n";
 
     //init ros
     ros::init(argc, argv, "raw_receiver_node");

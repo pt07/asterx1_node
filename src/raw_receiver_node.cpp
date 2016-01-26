@@ -30,7 +30,7 @@ void RawReceiverNode::obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr& msg
         prnVec.clear();
         rangeVec.clear();
 
-        std::cout << "New observations at tow: " << msg->time_stamp.tow << std::endl;
+        std::cout << "New observations at tow: " << getTime(msg->time_stamp.tow, msg->time_stamp.wnc) << std::endl;
 
         for (int i = 0; i < msg->type1_info.size(); ++i)
         {
@@ -73,7 +73,7 @@ void RawReceiverNode::obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr& msg
 void RawReceiverNode::navCallback(const iri_asterx1_gps::GPS_nav::ConstPtr& msg)
 {
     std::cout << "### NAV data for sat " << (short)msg->sat_id
-    << " at tow: " << msg->time_stamp.tow
+    << " at tow: " << getTime(msg->time_stamp.tow, msg->time_stamp.wnc)
     << "\t| iodt: " << (int)msg->iodc
     << std::endl;
 
@@ -82,15 +82,9 @@ void RawReceiverNode::navCallback(const iri_asterx1_gps::GPS_nav::ConstPtr& msg)
 
     gpstk::Rinex3NavData e;
 
-    //TODO vedi se basta howtime + weeknum o se serve anche questo
-//    e.time = getTime(msg->time_stamp.tow, msg->time_stamp.wnc);
-
-    //TODo mettere un tempo decente
-    e.time = gpstk::CivilTime(2016, 1, 20, 14, 53, 8, gpstk::TimeSystem::GPS);
-
+    e.time = getTime(msg->time_stamp.tow, msg->time_stamp.wnc);
     e.satSys = "G";
     e.PRNID = msg->sat_id;
-
     e.sat = gpstk::RinexSatID((short)msg->sat_id, gpstk::SatID::systemGPS);
     e.HOWtime = (int)msg->time_stamp.tow/1000;
     e.weeknum = msg->time_stamp.wnc;
@@ -158,7 +152,7 @@ void RawReceiverNode::navCallback(const iri_asterx1_gps::GPS_nav::ConstPtr& msg)
 void RawReceiverNode::navCallback2(const iri_asterx1_gps::GPS_nav::ConstPtr& msg)
 {
     std::cout << "### NAV data for sat " << (short)msg->sat_id
-    << " at tow: " << msg->time_stamp.tow
+    << " at tow: " << getTime(msg->time_stamp.tow, msg->time_stamp.wnc)
     << "\t| iodt: " << (int)msg->iodc
     << std::endl;
 
@@ -247,7 +241,7 @@ void RawReceiverNode::calculateSatPosition(const iri_asterx1_gps::GPS_meas::Cons
     int ret;
     gpstk::Matrix<double> calcPos;
 //TODO tempo da cambiare
-    ret = raimSolver.PrepareAutonomousSolution(gpstk::CivilTime(2016, 1, 20, 14, 53, 8, gpstk::TimeSystem::GPS), //questo e' il TOA (time of arrival), cioe' l'istante nel quale voglio predire la posizione dei satelliti
+    ret = raimSolver.PrepareAutonomousSolution(getTime(msg->time_stamp.tow, msg->time_stamp.wnc),
                                                prnVec,
                                                rangeVec,
                                                bcestore,
@@ -274,8 +268,7 @@ void RawReceiverNode::calculateFix(const iri_asterx1_gps::GPS_meas::ConstPtr& ms
     try {
 
         raimSolver.RAIMCompute(
-                //TODO tempo da cambiare
-                gpstk::CivilTime(2016, 1, 20, 14, 53, 8, gpstk::TimeSystem::GPS), //TODO controlla che sia questo il tempo richiesto!!
+                getTime(msg->time_stamp.tow, msg->time_stamp.wnc),
                 prnVec,
                 rangeVec,
                 bcestore,
@@ -322,4 +315,9 @@ void RawReceiverNode::calculateFix(const iri_asterx1_gps::GPS_meas::ConstPtr& ms
         std::cerr << e << std::endl;
         exit(0);
     }
+}
+
+gpstk::CivilTime RawReceiverNode::getTime(unsigned int tow, unsigned short wnc)
+{
+    return gpstk::CivilTime(gpstk::GPSWeekSecond(wnc, (double)tow/1000, gpstk::TimeSystem::GPS));
 }

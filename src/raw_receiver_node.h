@@ -23,8 +23,6 @@
 #include <SatID.hpp>
 //tentativo con rinex nav data per le eph. se non funziona, togli sto include
 #include "Rinex3NavData.hpp"
-//vedi se è meglio usare common time o civil time, in caso togli
-//#include "CivilTime.hpp"
 
 /**************************
  *      ROS includes      *
@@ -85,6 +83,8 @@ public:
     void navCallback2(const iri_asterx1_gps::GPS_nav::ConstPtr& msg);
 
 protected:
+    gpstk::CivilTime getTime(unsigned int tow, unsigned short wnc);
+
     void calculateFix(const iri_asterx1_gps::GPS_meas::ConstPtr& msg);
     void calculateSatPosition(const iri_asterx1_gps::GPS_meas::ConstPtr& msg);
 

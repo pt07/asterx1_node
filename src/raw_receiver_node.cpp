@@ -12,9 +12,7 @@ RawReceiverNode::RawReceiverNode() :
                               // I'm not using meteorological file, so it will be always like this
     bcestore.SearchNear();// Setting the criteria for looking up ephemeris
 
-    numNavMsgRec = 0;
     numRAIMNotValid = 0;
-
 
 }
 
@@ -23,48 +21,45 @@ RawReceiverNode::~RawReceiverNode()
 
 }
 
+// TODO to test
 void RawReceiverNode::obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr& msg)
 {
-    if(numNavMsgRec>=4)
+    std::cout << "OBS clbk: time " << getTime(msg->time_stamp.tow, msg->time_stamp.wnc) << "\t#" << msg->type1_info.size() << std::endl;
+
+    prnVec.clear();
+    rangeVec.clear();
+
+
+
+    for (int i = 0; i < msg->type1_info.size(); ++i)
     {
-        prnVec.clear();
-        rangeVec.clear();
+        const iri_asterx1_gps::GPS_meas_type1 meas_t1 = msg->type1_info[i];
 
-        std::cout << "New observations at tow: " << getTime(msg->time_stamp.tow, msg->time_stamp.wnc) << std::endl;
+        std::cout << "\t- sat_id: " << (short)meas_t1.sat_id// << std::endl
+        << std::setprecision(12)
+        << "\tpseudo_range: " << (long double)meas_t1.pseudo_range << std::endl;
 
-        for (int i = 0; i < msg->type1_info.size(); ++i)
-        {
-            const iri_asterx1_gps::GPS_meas_type1 meas_t1 = msg->type1_info[i];
+        double P1 = meas_t1.pseudo_range;
 
-            std::cout << "\t- sat_id: " << (short)meas_t1.sat_id// << std::endl
-            << std::setprecision(12)
-            << "\tpseudo_range: " << (long double)meas_t1.pseudo_range << std::endl;
+        // non abbiamo le frequenze p2, quindi non possiamo calcolare una correzione atmosferica
 
-            double P1 = meas_t1.pseudo_range;
+        prnVec.push_back(gpstk::SatID((short)meas_t1.sat_id, gpstk::SatID::systemGPS));
+        rangeVec.push_back(P1);
 
-            // non abbiamo le frequenze p2, quindi non possiamo calcolare una correzione atmosferica
-
-            prnVec.push_back(gpstk::SatID((short)meas_t1.sat_id, gpstk::SatID::systemGPS));
-            rangeVec.push_back(P1);
-
-        }
-
-        // Solve a GPS fix
-        raimSolver.RMSLimit = 3e6;
-
-
-        /*
-         * DO the math
-         */
-        if(calcSatPosition)
-            calculateSatPosition(msg);
-        else
-            calculateFix(msg);
-
-
-    } else {
-//        std::cout << ".";
     }
+
+    // Solve a GPS fix
+    raimSolver.RMSLimit = 3e6;
+
+
+    /*
+     * DO the math
+     */
+    if(calcSatPosition)
+        calculateSatPosition(msg);
+    else
+        calculateFix(msg);
+
 }
 
 /*
@@ -72,67 +67,74 @@ void RawReceiverNode::obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr& msg
  */
 void RawReceiverNode::navCallback(const iri_asterx1_gps::GPS_nav::ConstPtr& msg)
 {
-    std::cout << "### NAV data for sat " << (short)msg->sat_id
-    << " at tow: " << getTime(msg->time_stamp.tow, msg->time_stamp.wnc)
-    << "\t| iodt: " << (int)msg->iodc
-    << std::endl;
+    std::cout << "### NAV clbk: sat " << (short)msg->sat_id
+              << ", time " << getTime(msg->time_stamp.tow, msg->time_stamp.wnc)
+              << std::endl;
 
 
-//    gpstk::Rinex3NavData eph(EngEphemeris); TODO posso fare cosi!! pero engEphemeris è deprecato
+    gpstk::Rinex3NavData eph;
 
-    gpstk::Rinex3NavData e;
+    eph.time = getTime(msg->time_stamp.tow, msg->time_stamp.wnc);
+    eph.satSys = "G";
+    eph.PRNID = msg->sat_id;
+    eph.sat = gpstk::RinexSatID((short)msg->sat_id, gpstk::SatID::systemGPS);
+    eph.HOWtime = (int)msg->time_stamp.tow / 1000;
+    eph.weeknum = msg->wn;//msg->time_stamp.wnc; //******** quale dei 2?
+    eph.accuracy = 1;//***************************************
+    eph.health = (short)msg->health;
+    eph.codeflgs = msg->ca_or_pon_l2;//***********(credo di si)
+    eph.L2Pdata = msg->l2_data_flag;
+    eph.IODC = (double)msg->iodc;
+    eph.IODE = (double)msg->iode2;
 
-    e.time = getTime(msg->time_stamp.tow, msg->time_stamp.wnc);
-    e.satSys = "G";
-    e.PRNID = msg->sat_id;
-    e.sat = gpstk::RinexSatID((short)msg->sat_id, gpstk::SatID::systemGPS);
-    e.HOWtime = (int)msg->time_stamp.tow/1000;
-    e.weeknum = msg->time_stamp.wnc;
-    e.accuracy = 1;//***************************************
-    e.health = (short)msg->health;
-    e.codeflgs = msg->ca_or_pon_l2;//***********
-    e.L2Pdata = msg->l2_data_flag;
-    e.IODC = (double)msg->iodc;
-    e.IODE = (double)msg->iode2;
-    e.Toc = msg->t_oc;
-    e.af0 = msg->a_f0;
-    e.af1 = msg->a_f1;
-    e.af2 = msg->a_f2;
-    e.Tgd = msg->t_gd;
-    e.Tgd2 = 0.0;
-    e.Cuc = msg->c_uc;
-    e.Cus = msg->c_us;
-    e.Crc = msg->c_rc;
-    e.Crs = msg->c_rs;
-    e.Cic = msg->c_ic;
-    e.Cis = msg->c_is;
-    e.Toe = msg->t_oe;
-    e.M0 = msg->m_0;
-    e.dn = msg->delta_n;
-    e.ecc = msg->e;
-    e.Ahalf = msg->sqrt_a;
-    e.OMEGA0 = msg->omega_0;
-    e.i0 = msg->i_0;
-    e.w = msg->omega;
-    e.OMEGAdot = msg->omega_dot;
-    e.idot = msg->i_dot;
-    e.fitint = msg->fit_int_flag;//******************
+    eph.accCode = msg->ura;//**********
 
+    eph.Toc = msg->t_oc;
+    eph.af0 = msg->a_f0;
+    eph.af1 = msg->a_f1;
+    eph.af2 = msg->a_f2;
+    eph.Tgd = msg->t_gd;
+    eph.Tgd2 = 0.0;
+    eph.Cuc = msg->c_uc;
+    eph.Cus = msg->c_us;
+    eph.Crc = msg->c_rc;
+    eph.Crs = msg->c_rs;
+    eph.Cic = msg->c_ic;
+    eph.Cis = msg->c_is;
+    eph.Toe = msg->t_oe;
+    eph.M0 = msg->m_0;
+    eph.dn = msg->delta_n;
+    eph.ecc = msg->e;
+    eph.Ahalf = msg->sqrt_a;
+    eph.OMEGA0 = msg->omega_0;
+    eph.i0 = msg->i_0;
+    eph.w = msg->omega;
+    eph.OMEGAdot = msg->omega_dot;
+    eph.idot = msg->i_dot;
+    eph.fitint = 4;//msg->fit_int_flag;//****************** è 4 di solito?
+//    std::cout << "oggetto creato\n";
 
     try
     {
-        e.dump(std::cout);
-        std::cout << "ASD " << std::endl;
-        // Add the ephemeris just created to the ephemerides store
-        bcestore.addEphemeris(e);
-        std::cout << "ASD 2" << std::endl;
+//        if(eph.sat.id == 9)
+//        {
+//            eph.dump(std::cout);
+//            std::cout << "stampa dump\n";
+//        }
 
-        numNavMsgRec++;
+        //TODO soluzione temporanea al problema che se aggiungo una eph che è gia presente crasha tutto
+        if(! bcestore.isPresent(eph.sat))
+        {
+//            std::cout << "bcestore: adding sat " << eph.sat.id << " at time " << eph.time << " NOT present\n";
+            // Add the ephemeris just created to the ephemerides store
+            bcestore.addEphemeris(eph);
+            std::cout << "\toggetto aggiunto\n";
+        }
 
     }
     catch(gpstk::Exception& e)
     {
-        std::cerr << e << std::endl;
+        std::cerr << eph << std::endl;
         exit(0);
     }
     catch (...)
@@ -140,6 +142,9 @@ void RawReceiverNode::navCallback(const iri_asterx1_gps::GPS_nav::ConstPtr& msg)
         std::cerr << "Caught an unexpected exception." << std::endl;
         exit(0);
     }
+
+    // print recap of eph store
+    //bcestore.dump(std::cout, 2);
 
 }
 
@@ -232,7 +237,6 @@ void RawReceiverNode::navCallback2(const iri_asterx1_gps::GPS_nav::ConstPtr& msg
     std::cout << "ASD " << std::endl;
     std::cout << eph.asString() << std::endl;
 
-    numNavMsgRec++;
 }
 
 
@@ -240,7 +244,7 @@ void RawReceiverNode::calculateSatPosition(const iri_asterx1_gps::GPS_meas::Cons
 {
     int ret;
     gpstk::Matrix<double> calcPos;
-//TODO tempo da cambiare
+
     ret = raimSolver.PrepareAutonomousSolution(getTime(msg->time_stamp.tow, msg->time_stamp.wnc),
                                                prnVec,
                                                rangeVec,
@@ -298,6 +302,7 @@ void RawReceiverNode::calculateFix(const iri_asterx1_gps::GPS_meas::ConstPtr& ms
             std::cout << sol_llr[2];
             std::cout << std::endl;
 
+            numRAIMNotValid = 0; //azzera counter risultati non validi consecutivi
         }
         else
         {

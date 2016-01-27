@@ -63,7 +63,6 @@ protected:
     std::vector<double> rangeVec;
 
     //Robe di debug
-    int numNavMsgRec;
     int numRAIMNotValid;
 
 

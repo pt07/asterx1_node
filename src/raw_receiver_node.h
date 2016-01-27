@@ -31,12 +31,10 @@
 // ROS messages
 #include "iri_asterx1_gps/GPS_meas.h"
 #include "iri_asterx1_gps/GPS_nav.h"
+#include "iri_asterx1_gps/NavSatFix_ecef.h"
+#include "sensor_msgs/NavSatFix.h"
 
-
-// TODO ¡¡¡ fix cmakelist, in order to require gpstk installed !!!
-// TODO ¡¡¡ fix cmakelist, in order to require gpstk installed !!!
-// TODO ¡¡¡ fix cmakelist, in order to require gpstk installed !!!
-// TODO ¡¡¡ fix cmakelist, in order to require gpstk installed !!!
+//TODO check if cmakelist deny make if some libraries are not present
 
 class RawReceiverNode
 {
@@ -47,6 +45,8 @@ protected:
     // Subscribers
     ros::Subscriber obsSub; // obs (measurements) subscriber
     ros::Subscriber navSub; // nav subscriber
+    ros::Subscriber fixLlaSub; // fix long lat alt subscriber
+    ros::Subscriber fixEcefSub; // fix long lat alt subscriber
 
     // GPStk stuff
     gpstk::GPSEphemerisStore bcestore; //object for storing ephemerides
@@ -64,6 +64,8 @@ protected:
 
     //Robe di debug
     int numRAIMNotValid;
+    bool printFixEcef = false;
+    bool printFixLla = false;
 
 
     /*
@@ -80,6 +82,8 @@ public:
     void obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr& msg);
     void navCallback(const iri_asterx1_gps::GPS_nav::ConstPtr& msg);
     void navCallback2(const iri_asterx1_gps::GPS_nav::ConstPtr& msg);
+    void fixLlaCallback(const sensor_msgs::NavSatFix::ConstPtr &msg);
+    void fixEcefCallback(const iri_asterx1_gps::NavSatFix_ecef::ConstPtr &msg);
 
 protected:
     gpstk::CivilTime getTime(unsigned int tow, unsigned short wnc);

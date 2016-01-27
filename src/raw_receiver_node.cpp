@@ -6,6 +6,8 @@ RawReceiverNode::RawReceiverNode() :
 {
     obsSub = nh.subscribe("/iri_asterx1_gps/gps_meas", 1000, &RawReceiverNode::obsCallback, this);
     navSub = nh.subscribe("/iri_asterx1_gps/gps_nav", 1000, &RawReceiverNode::navCallback, this);
+    fixLlaSub = nh.subscribe("/iri_asterx1_gps/gps", 1000, &RawReceiverNode::fixLlaCallback, this);
+    fixEcefSub = nh.subscribe("/iri_asterx1_gps/gps_ecef", 1000, &RawReceiverNode::fixEcefCallback, this);
 
     //GPStk stuff
     tropModelPtr=&noTropModel;//if there is not a tropospheric model
@@ -350,4 +352,20 @@ void RawReceiverNode::calculateFix(const iri_asterx1_gps::GPS_meas::ConstPtr& ms
 gpstk::CivilTime RawReceiverNode::getTime(unsigned int tow, unsigned short wnc)
 {
     return gpstk::CivilTime(gpstk::GPSWeekSecond(wnc, (double)tow/1000, gpstk::TimeSystem::GPS));
+}
+
+void RawReceiverNode::fixLlaCallback(const sensor_msgs::NavSatFix::ConstPtr &msg)
+{
+    if(printFixLla)
+    {
+        std::cout << "%%%%%%%%%%%%%%%%    FIX long lat alt = (" << msg->longitude << ", " << msg->latitude << ", " << msg->altitude << ")\n";
+    }
+}
+
+void RawReceiverNode::fixEcefCallback(const iri_asterx1_gps::NavSatFix_ecef::ConstPtr &msg)
+{
+    if(printFixEcef)
+    {
+        std::cout << "%%%%%%%%%%%%%%%%    FIX ecef = (" << msg->x << ", " << msg->y << ", " << msg->z << ")\n";
+    }
 }

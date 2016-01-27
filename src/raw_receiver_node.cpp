@@ -24,7 +24,7 @@ RawReceiverNode::~RawReceiverNode()
 // TODO to test
 void RawReceiverNode::obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr& msg)
 {
-    std::cout << "OBS clbk: time " << getTime(msg->time_stamp.tow, msg->time_stamp.wnc) << "\t#" << msg->type1_info.size() << std::endl;
+    std::cout << "OBS clbk: time " << getTime(msg->time_stamp.tow, msg->time_stamp.wnc) << std::endl;
 
     prnVec.clear();
     rangeVec.clear();
@@ -35,9 +35,9 @@ void RawReceiverNode::obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr& msg
     {
         const iri_asterx1_gps::GPS_meas_type1 meas_t1 = msg->type1_info[i];
 
-        std::cout << "\t- sat_id: " << (short)meas_t1.sat_id// << std::endl
-        << std::setprecision(12)
-        << "\tpseudo_range: " << (long double)meas_t1.pseudo_range << std::endl;
+//        std::cout << "\t- sat_id: " << (short)meas_t1.sat_id// << std::endl
+//        << std::setprecision(12)
+//        << "\tpseudo_range: " << (long double)meas_t1.pseudo_range << std::endl;
 
         double P1 = meas_t1.pseudo_range;
 
@@ -253,16 +253,41 @@ void RawReceiverNode::calculateSatPosition(const iri_asterx1_gps::GPS_meas::Cons
     //Return values:  0 ok
     //               -4 ephemeris not found for all the satellites
 
-    //NB: verify that the number of good entries (Satellite[.] > 0) is > 4 before proceeding
-
-    if (ret!=0)
-        std::cout << "Return value of raimSolver2.PrepareAutonomousSolution:" << ret << std::endl;
-
-    for (size_t i = 0; i < prnVec.size(); ++i)
+    if(ret != -4)
     {
-        std::cout << "posizioni!  (" << calcPos[i][0] << ", " << calcPos[i][1] << ", " << calcPos[i][2] << ") ";
-        std::cout << " new pr = " << calcPos[i][3] << std::endl;
+        //NB: verify that the number of good entries (Satellite[.] > 0) is > 4 before proceeding
+        int goodEntries = 0;
+        for (int i = 0; i < prnVec.size(); ++i)
+        {
+            if(prnVec[i].id>0)
+            {
+                ++goodEntries;
+
+            }
+//            else
+//            {
+//                std::cout << "Sat #" << prnVec[i].id << " is a bad entry\n";
+//            }
+        }
+
+        std::cout << "\t% of good entries = " << goodEntries << "/" << prnVec.size() << "\n";
+
+        for (size_t i = 0; i < prnVec.size(); ++i)
+        {
+            if(prnVec[i].id > 0)
+            {
+                std::cout << "\tposizioni!  (" << calcPos[i][0] << ", " << calcPos[i][1] << ", " << calcPos[i][2] << ") ";
+                std::cout << " new pr = " << calcPos[i][3] << std::endl;
+            }
+        }
+
     }
+    else
+    {
+        std::cout << "\t% of good entries = 0/" << prnVec.size() << "\n";
+    }
+
+
 
 }
 

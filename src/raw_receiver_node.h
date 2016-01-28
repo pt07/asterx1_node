@@ -94,14 +94,13 @@ public:
 
     void obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr& msg);
     void navCallback(const iri_asterx1_gps::GPS_nav::ConstPtr& msg);
-    void navCallback2(const iri_asterx1_gps::GPS_nav::ConstPtr& msg);
     void fixLlaCallback(const sensor_msgs::NavSatFix::ConstPtr &msg);
     void fixEcefCallback(const iri_asterx1_gps::NavSatFix_ecef::ConstPtr &msg);
 
 protected:
     gpstk::CivilTime getTime(unsigned int tow, unsigned short wnc);
 
-    void calculateFix(const iri_asterx1_gps::GPS_meas::ConstPtr& msg);
+    void calculateFixGPStk(const iri_asterx1_gps::GPS_meas::ConstPtr &msg);
 
 
 public:

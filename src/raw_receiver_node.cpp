@@ -26,7 +26,7 @@ RawReceiverNode::~RawReceiverNode()
 // TODO to test
 void RawReceiverNode::obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr& msg)
 {
-    std::cout << "OBS clbk: time " << getTime(msg->time_stamp.tow, msg->time_stamp.wnc) << std::endl;
+    std::cout << "OBS callback: time " << getTime(msg->time_stamp.tow, msg->time_stamp.wnc) << std::endl;
 
     prnVec.clear();
     rangeVec.clear();
@@ -69,7 +69,7 @@ void RawReceiverNode::obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr& msg
  */
 void RawReceiverNode::navCallback(const iri_asterx1_gps::GPS_nav::ConstPtr& msg)
 {
-    std::cout << "### NAV clbk: sat " << (short)msg->sat_id
+    std::cout << "### NAV callback: sat " << (short)msg->sat_id
               << ", time " << getTime(msg->time_stamp.tow, msg->time_stamp.wnc)
               << std::endl;
 
@@ -278,8 +278,35 @@ void RawReceiverNode::calculateSatPosition(const iri_asterx1_gps::GPS_meas::Cons
         {
             if(prnVec[i].id > 0)
             {
-                std::cout << "\tposizioni!  (" << calcPos[i][0] << ", " << calcPos[i][1] << ", " << calcPos[i][2] << ") ";
-                std::cout << " new pr = " << calcPos[i][3] << std::endl;
+                std::cout << "\tPRN " << prnVec[i].id
+                          << "\tnew pr = " << calcPos[i][3]
+                          << "\tecef (" << calcPos[i][0] << ", " << calcPos[i][1] << ", " << calcPos[i][2] << ") "
+                          << std::endl;
+
+
+                //TODO questa è la velocità del satellite, calcolata tramite ephemeris
+                bcestore.getXvt(prnVec[i], getTime(msg->time_stamp.tow, msg->time_stamp.wnc)).getVel();
+
+
+
+                //TODO per domani:
+                //TODO per domani:
+                //TODO per domani:
+                //TODO per domani:
+                //TODO per domani:
+                /*
+                 * SCOPO: visualizzarli con rviz e vedere se hanno senso.
+                 *
+                 * pubblica posizione, velocità e pseudorange dei satelliti buoni.
+                 * potrei sfruttare il nodo trilateration che ha tutti i metodi per pubblicare terra, sat ecc.
+                 * ma lo modifico in modo che le posizioni non le ricavi da rinex_reader
+                 * ma legga quelle pubblicate da questo nodo
+                 */
+                //TODO per domani:
+                //TODO per domani:
+                //TODO per domani:
+                //TODO per domani:
+                //TODO per domani:
             }
         }
 

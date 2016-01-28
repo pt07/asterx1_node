@@ -1,5 +1,5 @@
 time timestamp
-uint8 sat_id
+uint16 sat_id
 float64 pseudorange
 float64 x
 float64 y

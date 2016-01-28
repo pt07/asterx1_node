@@ -117,6 +117,7 @@ void RawReceiverNode::obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr& msg
         }
     }
 
+    //TODO credo sia meglio pubblicare un vettore di SatPR, e non i singoli.
 }
 
 /*

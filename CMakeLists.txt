@@ -140,6 +140,12 @@ SET( SRCS_RAW_REC
 	src/raw_receiver_main.cpp
 )
 
+##
+SET( SRCS_VIZ_HELP
+    src/visualization_helper_node.cpp
+    src/visualization_helper_main.cpp
+)
+
 
 
 ###########
@@ -155,4 +161,8 @@ include_directories(
 ## cpp executable
 add_executable(raw_receiver_node ${SRCS_RAW_REC} )
 target_link_libraries(raw_receiver_node ${catkin_LIBRARIES} gpstk)
+
+
+add_executable(visualization_helper ${SRCS_VIZ_HELP} )
+target_link_libraries(visualization_helper ${catkin_LIBRARIES})
 

@@ -25,6 +25,8 @@ find_package(catkin REQUIRED COMPONENTS
         nav_msgs
 )
 
+#TODO togliere le cose che c'entrano con i marker, tf e odometry
+
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 find_package(iriutils REQUIRED)
@@ -56,17 +58,16 @@ FIND_LIBRARY(gpstk_LIBRARY REQUIRED
 ##     find_package(catkin REQUIRED COMPONENTS ...)
 ##   * add "message_runtime" and every package in MSG_DEP_SET to
 ##     catkin_package(CATKIN_DEPENDS ...)
-#TODO catkin_package(CATKIN_DEPENDS message_runtime)
 ##   * uncomment the add_*_files sections below as needed
 ##     and list every .msg/.srv/.action file to be processed
 ##   * uncomment the generate_messages entry below
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-#add_message_files(
-#  FILES
-#  ../../iri_asterx1_gps/msg/GPS_time.msg
-#)
+add_message_files(
+  FILES
+  SatPr.msg
+)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -83,10 +84,10 @@ FIND_LIBRARY(gpstk_LIBRARY REQUIRED
 # )
 
 ## Generate added messages and services with any dependencies listed here
-#generate_messages(
-#        DEPENDENCIES
-#        std_msgs  # Or other packages containing msgs
-#)
+generate_messages(
+        DEPENDENCIES
+        std_msgs  # Or other packages containing msgs
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -117,7 +118,9 @@ FIND_LIBRARY(gpstk_LIBRARY REQUIRED
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
-catkin_package(CATKIN_DEPENDS message_runtime )
+catkin_package(
+        CATKIN_DEPENDS message_runtime
+)
 
 catkin_package(
 #  INCLUDE_DIRS include

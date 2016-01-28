@@ -9,10 +9,7 @@ RawReceiverNode::RawReceiverNode() :
     fixLlaSub = nh.subscribe("/iri_asterx1_gps/gps", 1000, &RawReceiverNode::fixLlaCallback, this);
     fixEcefSub = nh.subscribe("/iri_asterx1_gps/gps_ecef", 1000, &RawReceiverNode::fixEcefCallback, this);
 
-    markerPub = nh.advertise<visualization_msgs::Marker>("/visualization_marker", 5000);
-    odomAllPub = nh.advertise<nav_msgs::Odometry>("/odom_all", 50);
-
-    scale = KILOMETERS;
+    satPrPub = nh.advertise<asterx1_node::SatPr>("/sat_pseudoranges", 5000);
 
     //GPStk stuff
     tropModelPtr=&noTropModel;//if there is not a tropospheric model
@@ -29,104 +26,34 @@ RawReceiverNode::~RawReceiverNode()
 }
 
 
-
-
-void RawReceiverNode::publishEarth()
-{
-    visualization_msgs::Marker m;
-    m.header.frame_id = WORLD_FRAME;
-    m.header.stamp = currentTime;
-
-    // Set the namespace and id for this marker.  This serves to create a unique ID
-    // Any marker sent with the same namespace and id will overwrite the old one
-    m.ns = "earth";
-    m.id = 0;
-
-    // Set the marker type.
-    m.type = visualization_msgs::Marker::SPHERE;
-
-    // Set the marker action.  Options are ADD, DELETE, and new in ROS Indigo: 3 (DELETEALL)
-    m.action = visualization_msgs::Marker::ADD;
-
-    // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
-    m.pose.position.x = 0;
-    m.pose.position.y = 0;
-    m.pose.position.z = 0;
-    m.pose.orientation.x = 0.0;
-    m.pose.orientation.y = 0.0;
-    m.pose.orientation.z = 0.0;
-    m.pose.orientation.w = 1.0;
-
-    // Set the scale of the marker -- 1x1x1 here means 1m on a side
-    m.scale.x = EARTH_RADIUS * scale;
-    m.scale.y = EARTH_RADIUS * scale;
-    m.scale.z = EARTH_RADIUS * scale;
-
-    // Set the color -- be sure to set alpha to something non-zero!
-    m.color.r = 0.0f;
-    m.color.g = 1.0f;
-    m.color.b = 0.0f;
-    m.color.a = 0.1;
-
-    m.lifetime = ros::Duration();
-
-    markerPub.publish(m);
-}
-
 void RawReceiverNode::publishSat(gpstk::SatID &prn, double pr, double x, double y, double z, double vx, double vy, double vz)
 {
-    visualization_msgs::Marker m;
-    m.header.frame_id = WORLD_FRAME;
-    m.header.stamp = currentTime;
+    asterx1_node::SatPr satPr;
 
-    m.ns = "sats";
-    m.id = prn.id;
+    satPr.timestamp = currentTime;
+    satPr.sat_id = prn.id;
+    satPr.pseudorange = pr;
+    satPr.x = x;
+    satPr.y = y;
+    satPr.z = z;
+    satPr.v_x = vx;
+    satPr.v_y = vy;
+    satPr.v_z = vz;
 
-    m.type = visualization_msgs::Marker::CUBE;//SPHERE;
-
-    m.action = visualization_msgs::Marker::ADD;
-
-    // Pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
-    m.pose.position.x = x * scale;
-    m.pose.position.y = y * scale;
-    m.pose.position.z = z * scale;
-    m.pose.orientation.x = 0.0;
-    m.pose.orientation.y = 0.0;
-    m.pose.orientation.z = 0.0;
-    m.pose.orientation.w = 1.0; // todo dovrei mettere la stessa posa del suo frame
-
-    m.scale.x =  m.scale.y = m.scale.z = 1000;
-
-    m.color.r = 1.0f;
-    m.color.g = 0.0f;
-    m.color.b = 0.0f;
-    m.color.a = 0.5;
-
-    m.lifetime = ros::Duration();
-
-    markerPub.publish(m);
-
-
-    //TODO publishVelocity();
-    //TODO publishOdometry();
-    //TODO publish tutti i vector che mi interessano();
+    satPrPub.publish(satPr);
 
 }
 
 
 
-
-
-
-// TODO to test
 void RawReceiverNode::obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr& msg)
 {
     std::cout << "OBS callback: time " << getTime(msg->time_stamp.tow, msg->time_stamp.wnc) << std::endl;
 
+    currentTime = ros::Time::now();
+
     prnVec.clear();
     rangeVec.clear();
-
-    currentTime = ros::Time::now();
 
     for (int i = 0; i < msg->type1_info.size(); ++i)
     {
@@ -139,10 +66,7 @@ void RawReceiverNode::obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr& msg
         rangeVec.push_back(P1);
     }
 
-    // Solve a GPS fix
     raimSolver.RMSLimit = 3e6;
-
-
 
 
     /************************************************************************
@@ -187,19 +111,12 @@ void RawReceiverNode::obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr& msg
             << "\tecef (" << calcPos[i][0] << ", " << calcPos[i][1] << ", " << calcPos[i][2] << ") "
             << std::endl;
 
-
-            //TODO questa è la velocità del satellite, calcolata tramite ephemeris
             gpstk::Triple vel = bcestore.getXvt(prnVec[i], getTime(msg->time_stamp.tow, msg->time_stamp.wnc)).getVel();
 
-
             publishSat(prnVec[i], calcPos[i][3], calcPos[i][0], calcPos[i][1], calcPos[i][2], vel[0], vel[1], vel[2]);
-
         }
-
-        //TODO delete the satellite from rviz
     }
 
-    publishEarth();
 }
 
 /*
@@ -256,11 +173,6 @@ void RawReceiverNode::navCallback(const iri_asterx1_gps::GPS_nav::ConstPtr& msg)
 
     try
     {
-//        if(eph.sat.id == 9)
-//        {
-//            eph.dump(std::cout);
-//            std::cout << "stampa dump\n";
-//        }
 
         //TODO soluzione temporanea al problema che se aggiungo una eph che è gia presente crasha tutto
         if(! bcestore.isPresent(eph.sat))

@@ -35,9 +35,7 @@
 #include "iri_asterx1_gps/NavSatFix_ecef.h"
 #include "sensor_msgs/NavSatFix.h"
 
-#include <visualization_msgs/Marker.h>
-#include <tf/transform_broadcaster.h>
-#include <nav_msgs/Odometry.h>
+#include "asterx1_node/SatPr.h"
 
 
 
@@ -56,11 +54,7 @@ protected:
     ros::Subscriber fixEcefSub; // fix long lat alt subscriber
 
     // Publishers
-    ros::Publisher markerPub;
-    ros::Publisher odomAllPub;
-    std::vector<ros::Publisher> odomPub;
-
-    tf::TransformBroadcaster transBroadcaster;
+    ros::Publisher satPrPub;
 
     ros::Time currentTime;// now is used only for publishing markers
 
@@ -88,9 +82,6 @@ public:
     ~RawReceiverNode();
 
     void publishSat(gpstk::SatID &prn, double pr, double x, double y, double z, double vx, double vy, double vz);
-
-    void publishEarth();
-//    void publishOdometry(TODO);
 
     void obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr& msg);
     void navCallback(const iri_asterx1_gps::GPS_nav::ConstPtr& msg);

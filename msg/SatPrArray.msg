@@ -1,0 +1,2 @@
+time timestamp
+SatPr[] measurements

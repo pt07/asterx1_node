@@ -9,7 +9,7 @@ RawReceiverNode::RawReceiverNode() :
     fixLlaSub = nh.subscribe("/iri_asterx1_gps/gps", 1000, &RawReceiverNode::fixLlaCallback, this);
     fixEcefSub = nh.subscribe("/iri_asterx1_gps/gps_ecef", 1000, &RawReceiverNode::fixEcefCallback, this);
 
-    satPrPub = nh.advertise<asterx1_node::SatPr>("/sat_pseudoranges", 5000);
+    observationPub = nh.advertise<asterx1_node::SatPrArray>("/sat_pseudoranges", 5000);
 
     //GPStk stuff
     tropModelPtr=&noTropModel;//if there is not a tropospheric model
@@ -26,7 +26,7 @@ RawReceiverNode::~RawReceiverNode()
 }
 
 
-void RawReceiverNode::publishSat(gpstk::SatID &prn, double pr, double x, double y, double z, double vx, double vy, double vz)
+asterx1_node::SatPr RawReceiverNode::getSatMsg(gpstk::SatID &prn, double pr, double x, double y, double z, double vx, double vy, double vz)
 {
     asterx1_node::SatPr satPr;
 
@@ -40,7 +40,7 @@ void RawReceiverNode::publishSat(gpstk::SatID &prn, double pr, double x, double 
     satPr.v_y = vy;
     satPr.v_z = vz;
 
-    satPrPub.publish(satPr);
+    return satPr;
 
 }
 
@@ -52,8 +52,8 @@ void RawReceiverNode::obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr& msg
 
     currentTime = ros::Time::now();
 
-    prnVec.clear();
-    rangeVec.clear();
+    std::vector<gpstk::SatID> prnVec;
+    std::vector<double> rangeVec;
 
     for (int i = 0; i < msg->type1_info.size(); ++i)
     {
@@ -102,6 +102,10 @@ void RawReceiverNode::obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr& msg
 
     std::cout << "\t% of good entries = " << goodEntries << "/" << prnVec.size() << "\n";
 
+    asterx1_node::SatPrArray observation;
+
+    observation.timestamp = currentTime;
+
     for (size_t i = 0; i < prnVec.size(); ++i)
     {
         if(prnVec[i].id > 0)
@@ -113,11 +117,13 @@ void RawReceiverNode::obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr& msg
 
             gpstk::Triple vel = bcestore.getXvt(prnVec[i], getTime(msg->time_stamp.tow, msg->time_stamp.wnc)).getVel();
 
-            publishSat(prnVec[i], calcPos[i][3], calcPos[i][0], calcPos[i][1], calcPos[i][2], vel[0], vel[1], vel[2]);
+            observation.measurements.push_back(getSatMsg(prnVec[i], calcPos[i][3], calcPos[i][0], calcPos[i][1], calcPos[i][2], vel[0], vel[1], vel[2]));
         }
     }
 
-    //TODO credo sia meglio pubblicare un vettore di SatPR, e non i singoli.
+
+    observationPub.publish(observation);
+
 }
 
 /*
@@ -201,62 +207,62 @@ void RawReceiverNode::navCallback(const iri_asterx1_gps::GPS_nav::ConstPtr& msg)
 
 }
 
-
-void RawReceiverNode::calculateFixGPStk(const iri_asterx1_gps::GPS_meas::ConstPtr &msg)
-{
-
-    try {
-
-        raimSolver.RAIMCompute(
-                getTime(msg->time_stamp.tow, msg->time_stamp.wnc),
-                prnVec,
-                rangeVec,
-                bcestore,
-                tropModelPtr);
-
-        if (raimSolver.isValid())
-        {
-            // Vector "Solution" holds the coordinates, expressed in meters
-            // in an Earth Centered, Earth Fixed (ECEF) reference frame.
-            std::cout << std::setprecision(12) << raimSolver.Solution[0] << " ";
-            std::cout << raimSolver.Solution[1] << " ";
-            std::cout << raimSolver.Solution[2];
-            std::cout << " --> LLR: ";
-
-            gpstk::Triple sol_xyz, sol_llr;
-            sol_xyz[0] = raimSolver.Solution[0];
-            sol_xyz[1] = raimSolver.Solution[1];
-            sol_xyz[2] = raimSolver.Solution[2];
-            gpstk::WGS84Ellipsoid WGS84;
-            double AEarth = WGS84.a();
-            double eccSquared = WGS84.eccSquared();
-
-            gpstk::Position::convertCartesianToGeodetic(sol_xyz, sol_llr, AEarth, eccSquared);
-
-            std::cout << sol_llr[0] << " ";
-            std::cout << sol_llr[1] << " ";
-            std::cout << sol_llr[2];
-            std::cout << std::endl;
-
-            numRAIMNotValid = 0; //azzera counter risultati non validi consecutivi
-        }
-        else
-        {
-            std::cout << "raimSolver NOT Valid" << std::endl;
-            numRAIMNotValid++;
-
-
-
-            if(numRAIMNotValid>10)
-                exit(0);
-        }
-    }
-    catch (gpstk::Exception& e)
-    {
-        std::cerr << e << std::endl;
-        exit(0);
-    }
-}
+//
+//void RawReceiverNode::calculateFixGPStk(const iri_asterx1_gps::GPS_meas::ConstPtr &msg)
+//{
+//
+//    try {
+//
+//        raimSolver.RAIMCompute(
+//                getTime(msg->time_stamp.tow, msg->time_stamp.wnc),
+//                prnVec,
+//                rangeVec,
+//                bcestore,
+//                tropModelPtr);
+//
+//        if (raimSolver.isValid())
+//        {
+//            // Vector "Solution" holds the coordinates, expressed in meters
+//            // in an Earth Centered, Earth Fixed (ECEF) reference frame.
+//            std::cout << std::setprecision(12) << raimSolver.Solution[0] << " ";
+//            std::cout << raimSolver.Solution[1] << " ";
+//            std::cout << raimSolver.Solution[2];
+//            std::cout << " --> LLR: ";
+//
+//            gpstk::Triple sol_xyz, sol_llr;
+//            sol_xyz[0] = raimSolver.Solution[0];
+//            sol_xyz[1] = raimSolver.Solution[1];
+//            sol_xyz[2] = raimSolver.Solution[2];
+//            gpstk::WGS84Ellipsoid WGS84;
+//            double AEarth = WGS84.a();
+//            double eccSquared = WGS84.eccSquared();
+//
+//            gpstk::Position::convertCartesianToGeodetic(sol_xyz, sol_llr, AEarth, eccSquared);
+//
+//            std::cout << sol_llr[0] << " ";
+//            std::cout << sol_llr[1] << " ";
+//            std::cout << sol_llr[2];
+//            std::cout << std::endl;
+//
+//            numRAIMNotValid = 0; //azzera counter risultati non validi consecutivi
+//        }
+//        else
+//        {
+//            std::cout << "raimSolver NOT Valid" << std::endl;
+//            numRAIMNotValid++;
+//
+//
+//
+//            if(numRAIMNotValid>10)
+//                exit(0);
+//        }
+//    }
+//    catch (gpstk::Exception& e)
+//    {
+//        std::cerr << e << std::endl;
+//        exit(0);
+//    }
+//}
 
 gpstk::CivilTime RawReceiverNode::getTime(unsigned int tow, unsigned short wnc)
 {

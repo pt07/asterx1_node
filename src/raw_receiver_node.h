@@ -36,6 +36,7 @@
 #include "sensor_msgs/NavSatFix.h"
 
 #include "asterx1_node/SatPr.h"
+#include "asterx1_node/SatPrArray.h"
 
 
 
@@ -54,7 +55,7 @@ protected:
     ros::Subscriber fixEcefSub; // fix long lat alt subscriber
 
     // Publishers
-    ros::Publisher satPrPub;
+    ros::Publisher observationPub;
 
     ros::Time currentTime;// now is used only for publishing markers
 
@@ -68,9 +69,6 @@ protected:
     //forse sta gamma non serve, perchè non ho la frequenza l2 e di conseguenza non posso calcolare la ionocorr
     //const double gamma = (gpstk::L1_FREQ_GPS/gpstk::L2_FREQ_GPS)*(gpstk::L1_FREQ_GPS/gpstk::L2_FREQ_GPS);
 
-    std::vector<gpstk::SatID> prnVec;
-    std::vector<double> rangeVec;
-
     //Robe di debug
     int numRAIMNotValid;
     bool printFixEcef = false;
@@ -81,7 +79,7 @@ public:
     RawReceiverNode();
     ~RawReceiverNode();
 
-    void publishSat(gpstk::SatID &prn, double pr, double x, double y, double z, double vx, double vy, double vz);
+    asterx1_node::SatPr getSatMsg(gpstk::SatID &prn, double pr, double x, double y, double z, double vx, double vy, double vz);
 
     void obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr& msg);
     void navCallback(const iri_asterx1_gps::GPS_nav::ConstPtr& msg);
@@ -91,7 +89,7 @@ public:
 protected:
     gpstk::CivilTime getTime(unsigned int tow, unsigned short wnc);
 
-    void calculateFixGPStk(const iri_asterx1_gps::GPS_meas::ConstPtr &msg);
+//    void calculateFixGPStk(const iri_asterx1_gps::GPS_meas::ConstPtr &msg);
 
 
 public:

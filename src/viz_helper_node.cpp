@@ -2,7 +2,7 @@
 // Created by ptirindelli on 28/01/16.
 //
 
-#include "visualization_helper_node.h"
+#include "viz_helper_node.h"
 
 VisualizationHelperNode::VisualizationHelperNode() :
         nh(ros::this_node::getName())
@@ -17,33 +17,42 @@ VisualizationHelperNode::VisualizationHelperNode() :
 
 VisualizationHelperNode::~VisualizationHelperNode(){ }
 
-void VisualizationHelperNode::pseudorangeCallback(const asterx1_node::SatPr::ConstPtr &msg)
+void VisualizationHelperNode::pseudorangeCallback(const asterx1_node::SatPrArray::ConstPtr &msg)
 {
-    std::cout << "Visualizing sat " << msg->sat_id << "\n";
-    publishSat(msg);
+    std::cout << "Visualizing " << msg->measurements.size() << " sats at " << msg->timestamp << "\n";
+
+    for (int i = 0; i < msg->measurements.size(); ++i)
+    {
+        const asterx1_node::SatPr sat = msg->measurements[i];
+
+        publishSat(sat);
+
+    }
+
+    //TODO eliminare da rviz i satelliti non più presenti
 
 
     publishEarth();
 
 }
 
-void VisualizationHelperNode::publishSat(const asterx1_node::SatPr::ConstPtr &msg)
+void VisualizationHelperNode::publishSat(const asterx1_node::SatPr &sat)
 {
     visualization_msgs::Marker m;
     m.header.frame_id = WORLD_FRAME;
-    m.header.stamp = msg->timestamp;
+    m.header.stamp = sat.timestamp;
 
     m.ns = "sats";
-    m.id = msg->sat_id;
+    m.id = sat.sat_id;
 
     m.type = visualization_msgs::Marker::CUBE;//SPHERE;
 
     m.action = visualization_msgs::Marker::ADD;
 
     // Pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
-    m.pose.position.x = msg->x * scale;
-    m.pose.position.y = msg->y * scale;
-    m.pose.position.z = msg->z * scale;
+    m.pose.position.x = sat.x * scale;
+    m.pose.position.y = sat.y * scale;
+    m.pose.position.z = sat.z * scale;
     m.pose.orientation.x = 0.0;
     m.pose.orientation.y = 0.0;
     m.pose.orientation.z = 0.0;

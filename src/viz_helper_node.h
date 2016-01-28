@@ -2,12 +2,14 @@
 // Created by ptirindelli on 28/01/16.
 //
 
-#ifndef ASTERX1_NODE_VISUALIZATION_HELPER_NODE_H
-#define ASTERX1_NODE_VISUALIZATION_HELPER_NODE_H
+#ifndef ASTERX1_NODE_VIZ_HELPER_NODE_H
+#define ASTERX1_NODE_VIZ_HELPER_NODE_H
 
 #include <ros/ros.h>
 
 #include "asterx1_node/SatPr.h"
+#include "asterx1_node/SatPrArray.h"
+
 #include <visualization_msgs/Marker.h>
 
 #include <tf/transform_broadcaster.h>
@@ -20,10 +22,10 @@ public:
     VisualizationHelperNode();
     ~VisualizationHelperNode();
 
-    void pseudorangeCallback(const asterx1_node::SatPr::ConstPtr &msg);
+    void pseudorangeCallback(const asterx1_node::SatPrArray::ConstPtr &msg);
 
 protected:
-    void publishSat(const asterx1_node::SatPr::ConstPtr &msg);
+    void publishSat(const asterx1_node::SatPr &sat);
     void publishEarth();
 
 
@@ -53,4 +55,4 @@ protected:
 };
 
 
-#endif //ASTERX1_NODE_VISUALIZATION_HELPER_NODE_H
+#endif //ASTERX1_NODE_VIZ_HELPER_NODE_H

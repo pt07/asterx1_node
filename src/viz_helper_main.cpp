@@ -3,7 +3,7 @@
 //
 
 #include <iostream>
-#include "visualization_helper_node.h"
+#include "viz_helper_node.h"
 
 
 int main(int argc, char **argv)

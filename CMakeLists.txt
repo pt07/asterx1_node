@@ -67,6 +67,7 @@ FIND_LIBRARY(gpstk_LIBRARY REQUIRED
 add_message_files(
   FILES
   SatPr.msg
+  SatPrArray.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -142,8 +143,8 @@ SET( SRCS_RAW_REC
 
 ##
 SET( SRCS_VIZ_HELP
-    src/visualization_helper_node.cpp
-    src/visualization_helper_main.cpp
+        src/viz_helper_node.cpp
+        src/viz_helper_main.cpp
 )
 
 
@@ -162,7 +163,6 @@ include_directories(
 add_executable(raw_receiver_node ${SRCS_RAW_REC} )
 target_link_libraries(raw_receiver_node ${catkin_LIBRARIES} gpstk)
 
-
-add_executable(visualization_helper ${SRCS_VIZ_HELP} )
-target_link_libraries(visualization_helper ${catkin_LIBRARIES})
+add_executable(viz_helper ${SRCS_VIZ_HELP} )
+target_link_libraries(viz_helper ${catkin_LIBRARIES})
 

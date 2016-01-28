@@ -16,12 +16,17 @@ endif()
 
 ## Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS
-  message_generation #TODO forse non serve
-  sensor_msgs
-  roscpp
-  std_msgs
+        roscpp
+        std_msgs
+        message_generation
+        sensor_msgs
+        visualization_msgs
+        tf
+        nav_msgs
 )
 
+## System dependencies are found with CMake's conventions
+# find_package(Boost REQUIRED COMPONENTS system)
 find_package(iriutils REQUIRED)
 find_package(asterx1_gps REQUIRED)
 
@@ -30,14 +35,7 @@ FIND_LIBRARY(gpstk_LIBRARY REQUIRED
         NAMES gpstk
         PATHS /usr/lib /usr/local/lib)
 
-## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
 
-
-## Uncomment this if the package has a setup.py. This macro ensures
-## modules and global scripts declared therein get installed
-## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
-# catkin_python_setup()
 
 ################################################
 ## Declare ROS messages, services and actions ##
@@ -85,11 +83,9 @@ FIND_LIBRARY(gpstk_LIBRARY REQUIRED
 # )
 
 ## Generate added messages and services with any dependencies listed here
-#generate_messages( #TODO serve? ora funziona, ma magari perche ho gia compilato i pacchetti
-#  DEPENDENCIES
-  #sensor_msgs SERVE?
-#  iri_asterx1_gps
-#  std_msgs  # Or other packages containing msgs
+#generate_messages(
+#        DEPENDENCIES
+#        std_msgs  # Or other packages containing msgs
 #)
 
 ################################################
@@ -147,6 +143,8 @@ SET( SRCS_RAW_REC
 ## Build ##
 ###########
 
+## Specify additional locations of header files
+## Your package locations should be listed before other locations
 include_directories(
   ${catkin_INCLUDE_DIRS}
 )
@@ -154,10 +152,4 @@ include_directories(
 ## cpp executable
 add_executable(raw_receiver_node ${SRCS_RAW_REC} )
 target_link_libraries(raw_receiver_node ${catkin_LIBRARIES} gpstk)
-
-
-
-add_executable(talker src/talker.cpp)
-target_link_libraries(talker ${catkin_LIBRARIES})
-add_dependencies(talker beginner_tutorials_generate_messages_cpp)
 

@@ -28,11 +28,18 @@
  *      ROS includes      *
  **************************/
 #include <ros/ros.h>
+
 // ROS messages
 #include "iri_asterx1_gps/GPS_meas.h"
 #include "iri_asterx1_gps/GPS_nav.h"
 #include "iri_asterx1_gps/NavSatFix_ecef.h"
 #include "sensor_msgs/NavSatFix.h"
+
+#include <visualization_msgs/Marker.h>
+#include <tf/transform_broadcaster.h>
+#include <nav_msgs/Odometry.h>
+
+
 
 //TODO check if cmakelist deny make if some libraries are not present
 
@@ -48,6 +55,16 @@ protected:
     ros::Subscriber fixLlaSub; // fix long lat alt subscriber
     ros::Subscriber fixEcefSub; // fix long lat alt subscriber
 
+    // Publishers
+    ros::Publisher markerPub;
+    ros::Publisher odomAllPub;
+    std::vector<ros::Publisher> odomPub;
+
+    tf::TransformBroadcaster transBroadcaster;
+
+    ros::Time currentTime;// now is used only for publishing markers
+
+
     // GPStk stuff
     gpstk::GPSEphemerisStore bcestore; //object for storing ephemerides
     gpstk::PRSolution2 raimSolver; //object for handling RAIM
@@ -55,9 +72,7 @@ protected:
     gpstk::ZeroTropModel *tropModelPtr;// Pointer to one of the two available tropospheric models. It points to the void model by default
 
     //forse sta gamma non serve, perchè non ho la frequenza l2 e di conseguenza non posso calcolare la ionocorr
-    const double gamma = (gpstk::L1_FREQ_GPS/gpstk::L2_FREQ_GPS)*(gpstk::L1_FREQ_GPS/gpstk::L2_FREQ_GPS);
-    int indexP1; //TODO vedi a cosa serve
-    const int indexP2 = -1; //TODO vedi a cosa serve
+    //const double gamma = (gpstk::L1_FREQ_GPS/gpstk::L2_FREQ_GPS)*(gpstk::L1_FREQ_GPS/gpstk::L2_FREQ_GPS);
 
     std::vector<gpstk::SatID> prnVec;
     std::vector<double> rangeVec;
@@ -68,16 +83,14 @@ protected:
     bool printFixLla = false;
 
 
-    /*
-     * 2 modalità:
-     *      calcSatPosition = true -->  calcola la posizione dei satelliti
-     *      calcSatPosition = false --> calcola un gps fix
-     */
-    bool calcSatPosition = true;
-
 public:
     RawReceiverNode();
     ~RawReceiverNode();
+
+    void publishSat(gpstk::SatID &prn, double pr, double x, double y, double z, double vx, double vy, double vz);
+
+    void publishEarth();
+//    void publishOdometry(TODO);
 
     void obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr& msg);
     void navCallback(const iri_asterx1_gps::GPS_nav::ConstPtr& msg);
@@ -89,7 +102,17 @@ protected:
     gpstk::CivilTime getTime(unsigned int tow, unsigned short wnc);
 
     void calculateFix(const iri_asterx1_gps::GPS_meas::ConstPtr& msg);
-    void calculateSatPosition(const iri_asterx1_gps::GPS_meas::ConstPtr& msg);
+
+
+public:
+    const std::string WORLD_FRAME = "world";
+
+    const double EARTH_RADIUS = 6371000; // meters
+    const double METERS = 1;
+    const double KILOMETERS = METERS/1000;
+
+protected:
+    double scale; // provv: per gestire le dimensioni di stampa.
 
 };
 #endif

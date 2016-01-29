@@ -113,7 +113,7 @@ void RawReceiverNode::obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr& msg
 
             gpstk::Triple vel = bcestore.getXvt(prnVec[i], getTimeGPS(msg->time_stamp.tow, msg->time_stamp.wnc)).getVel();
 
-            observation.measurements.push_back(getSatMsg(prnVec[i], currentTime, calcPos[i][3], calcPos[i][0], calcPos[i][1], calcPos[i][2], vel[0], vel[1], vel[2]));
+            observation.measurements.push_back(getSatMsg(prnVec[i], currentTime, rangeVec[i]/*TODO questo è il pseudorange corretto da raim solvercalcPos[i][3]*/, calcPos[i][0], calcPos[i][1], calcPos[i][2], vel[0], vel[1], vel[2]));
         }
     }
 

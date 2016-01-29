@@ -8,6 +8,7 @@ TrilaterationNode::TrilaterationNode():
         nh(ros::this_node::getName())
 {
     pseudorangeSub = nh.subscribe("/sat_pseudoranges", 1000, &TrilaterationNode::pseudorangeCallback, this);
+    fixEcefSub = nh.subscribe("/iri_asterx1_gps/gps_ecef", 1000, &TrilaterationNode::fixEcefCallback, this);
 
 }
 
@@ -39,8 +40,21 @@ void TrilaterationNode::pseudorangeCallback(const asterx1_node::SatPrArray::Cons
     Receiver estRec = tr.computePosition(measurements);
 
     std::cout << " ---> Estimation:\t" << estRec.toString() << std::endl;
+    std::cout << "     diff coords:\t" << (estRec.pos + -lastFix).toString() << std::endl;
+    std::cout << "           error:\t" << estRec.pos.distanceTo(lastFix) << std::endl;
+
 
     // Sets the guess for the next simulation in the actual position
     tr.setInitialReceiverGuess(estRec);
 
 }
+
+
+void TrilaterationNode::fixEcefCallback(const iri_asterx1_gps::NavSatFix_ecef::ConstPtr &msg)
+{
+    //std::cout << "%%%%  FIX ecef = (" << msg->x << ", " << msg->y << ", " << msg->z << ")\n";
+    lastFix.setX(msg->x);
+    lastFix.setY(msg->y);
+    lastFix.setZ(msg->z);
+}
+

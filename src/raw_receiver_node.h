@@ -53,7 +53,7 @@ protected:
     ros::Subscriber obsSub; // obs (measurements) subscriber
     ros::Subscriber navSub; // nav subscriber
     ros::Subscriber fixLlaSub; // fix long lat alt subscriber
-    ros::Subscriber fixEcefSub; // fix long lat alt subscriber
+    ros::Subscriber fixEcefSub; // fix ecef subscriber
 
     // Publishers
     ros::Publisher observationPub;

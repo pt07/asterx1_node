@@ -8,7 +8,7 @@
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "visualization_helper_node");
+    ros::init(argc, argv, "viz_helper_node");
 
     VisualizationHelperNode vhNode;
 

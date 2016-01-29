@@ -47,6 +47,7 @@ class RawReceiverNode
 protected:
     // ROS node handle
     ros::NodeHandle nh;
+    ros::Time currentTime;
 
     // Subscribers
     ros::Subscriber obsSub; // obs (measurements) subscriber
@@ -56,8 +57,6 @@ protected:
 
     // Publishers
     ros::Publisher observationPub;
-
-    ros::Time currentTime;// now is used only for publishing markers
 
 
     // GPStk stuff
@@ -69,8 +68,7 @@ protected:
     //forse sta gamma non serve, perchè non ho la frequenza l2 e di conseguenza non posso calcolare la ionocorr
     //const double gamma = (gpstk::L1_FREQ_GPS/gpstk::L2_FREQ_GPS)*(gpstk::L1_FREQ_GPS/gpstk::L2_FREQ_GPS);
 
-    //Robe di debug
-    int numRAIMNotValid;
+    // Debug stuff
     bool printFixEcef = false;
     bool printFixLla = false;
 
@@ -79,7 +77,7 @@ public:
     RawReceiverNode();
     ~RawReceiverNode();
 
-    asterx1_node::SatPr getSatMsg(gpstk::SatID &prn, double pr, double x, double y, double z, double vx, double vy, double vz);
+    asterx1_node::SatPr getSatMsg(gpstk::SatID &prn, ros::Time &time, double pr, double x, double y, double z, double vx, double vy, double vz);
 
     void obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr& msg);
     void navCallback(const iri_asterx1_gps::GPS_nav::ConstPtr& msg);
@@ -87,20 +85,9 @@ public:
     void fixEcefCallback(const iri_asterx1_gps::NavSatFix_ecef::ConstPtr &msg);
 
 protected:
-    gpstk::CivilTime getTime(unsigned int tow, unsigned short wnc);
+    gpstk::CivilTime getTimeGPS(unsigned int tow, unsigned short wnc);
 
 //    void calculateFixGPStk(const iri_asterx1_gps::GPS_meas::ConstPtr &msg);
-
-
-public:
-    const std::string WORLD_FRAME = "world";
-
-    const double EARTH_RADIUS = 6371000; // meters
-    const double METERS = 1;
-    const double KILOMETERS = METERS/1000;
-
-protected:
-    double scale; // provv: per gestire le dimensioni di stampa.
 
 };
 #endif

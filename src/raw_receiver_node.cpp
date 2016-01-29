@@ -14,9 +14,8 @@ RawReceiverNode::RawReceiverNode() :
     //GPStk stuff
     tropModelPtr=&noTropModel;//if there is not a tropospheric model
                               // I'm not using meteorological file, so it will be always like this
+                              // TODO vedi se puoi usare un trop model presente nella classe .h
     bcestore.SearchNear();// Setting the criteria for looking up ephemeris
-
-    numRAIMNotValid = 0;
 
 }
 
@@ -26,12 +25,12 @@ RawReceiverNode::~RawReceiverNode()
 }
 
 
-asterx1_node::SatPr RawReceiverNode::getSatMsg(gpstk::SatID &prn, double pr, double x, double y, double z, double vx, double vy, double vz)
+asterx1_node::SatPr RawReceiverNode::getSatMsg(gpstk::SatID &prn, ros::Time &time, double pr, double x, double y, double z, double vx, double vy, double vz)
 {
     asterx1_node::SatPr satPr;
 
-    satPr.timestamp = currentTime;
     satPr.sat_id = prn.id;
+    satPr.timestamp = time;
     satPr.pseudorange = pr;
     satPr.x = x;
     satPr.y = y;
@@ -48,7 +47,7 @@ asterx1_node::SatPr RawReceiverNode::getSatMsg(gpstk::SatID &prn, double pr, dou
 
 void RawReceiverNode::obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr& msg)
 {
-    std::cout << "OBS callback: time " << getTime(msg->time_stamp.tow, msg->time_stamp.wnc) << std::endl;
+    std::cout << "OBS callback: time " << getTimeGPS(msg->time_stamp.tow, msg->time_stamp.wnc) << std::endl;
 
     currentTime = ros::Time::now();
 
@@ -75,7 +74,7 @@ void RawReceiverNode::obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr& msg
     int ret;
     gpstk::Matrix<double> calcPos;
 
-    ret = raimSolver.PrepareAutonomousSolution(getTime(msg->time_stamp.tow, msg->time_stamp.wnc),
+    ret = raimSolver.PrepareAutonomousSolution(getTimeGPS(msg->time_stamp.tow, msg->time_stamp.wnc),
                                                prnVec,
                                                rangeVec,
                                                bcestore,
@@ -93,15 +92,12 @@ void RawReceiverNode::obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr& msg
     for (int i = 0; i < prnVec.size(); ++i)
     {
         if(prnVec[i].id>0)
-        {
             ++goodEntries;
-
-        }
-//            else { std::cout << "Sat #" << prnVec[i].id << " is a bad entry\n"; }
+//      else std::cout << "Sat #" << prnVec[i].id << " is a bad entry\n";
     }
-
     std::cout << "\t% of good entries = " << goodEntries << "/" << prnVec.size() << "\n";
 
+    // Compose the message
     asterx1_node::SatPrArray observation;
 
     observation.timestamp = currentTime;
@@ -115,9 +111,9 @@ void RawReceiverNode::obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr& msg
             << "\tecef (" << calcPos[i][0] << ", " << calcPos[i][1] << ", " << calcPos[i][2] << ") "
             << std::endl;
 
-            gpstk::Triple vel = bcestore.getXvt(prnVec[i], getTime(msg->time_stamp.tow, msg->time_stamp.wnc)).getVel();
+            gpstk::Triple vel = bcestore.getXvt(prnVec[i], getTimeGPS(msg->time_stamp.tow, msg->time_stamp.wnc)).getVel();
 
-            observation.measurements.push_back(getSatMsg(prnVec[i], calcPos[i][3], calcPos[i][0], calcPos[i][1], calcPos[i][2], vel[0], vel[1], vel[2]));
+            observation.measurements.push_back(getSatMsg(prnVec[i], currentTime, calcPos[i][3], calcPos[i][0], calcPos[i][1], calcPos[i][2], vel[0], vel[1], vel[2]));
         }
     }
 
@@ -126,19 +122,18 @@ void RawReceiverNode::obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr& msg
 
 }
 
-/*
- * TODO finish the filling part and test it
- */
+
+
 void RawReceiverNode::navCallback(const iri_asterx1_gps::GPS_nav::ConstPtr& msg)
 {
     std::cout << "### NAV callback: sat " << (short)msg->sat_id
-              << ", time " << getTime(msg->time_stamp.tow, msg->time_stamp.wnc)
+              << ", time " << getTimeGPS(msg->time_stamp.tow, msg->time_stamp.wnc)
               << std::endl;
 
 
     gpstk::Rinex3NavData eph;
 
-    eph.time = getTime(msg->time_stamp.tow, msg->time_stamp.wnc);
+    eph.time = getTimeGPS(msg->time_stamp.tow, msg->time_stamp.wnc);
     eph.satSys = "G";
     eph.PRNID = msg->sat_id;
     eph.sat = gpstk::RinexSatID((short)msg->sat_id, gpstk::SatID::systemGPS);
@@ -214,7 +209,7 @@ void RawReceiverNode::navCallback(const iri_asterx1_gps::GPS_nav::ConstPtr& msg)
 //    try {
 //
 //        raimSolver.RAIMCompute(
-//                getTime(msg->time_stamp.tow, msg->time_stamp.wnc),
+//                getTimeGPS(msg->time_stamp.tow, msg->time_stamp.wnc),
 //                prnVec,
 //                rangeVec,
 //                bcestore,
@@ -264,7 +259,7 @@ void RawReceiverNode::navCallback(const iri_asterx1_gps::GPS_nav::ConstPtr& msg)
 //    }
 //}
 
-gpstk::CivilTime RawReceiverNode::getTime(unsigned int tow, unsigned short wnc)
+gpstk::CivilTime RawReceiverNode::getTimeGPS(unsigned int tow, unsigned short wnc)
 {
     return gpstk::CivilTime(gpstk::GPSWeekSecond(wnc, (double)tow/1000, gpstk::TimeSystem::GPS));
 }

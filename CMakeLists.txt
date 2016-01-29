@@ -31,11 +31,13 @@ find_package(catkin REQUIRED COMPONENTS
 # find_package(Boost REQUIRED COMPONENTS system)
 find_package(iriutils REQUIRED)
 find_package(asterx1_gps REQUIRED)
+find_package(Ceres)
 
 #TODO fare in modo che gpstk sia required
 FIND_LIBRARY(gpstk_LIBRARY REQUIRED
-        NAMES gpstk
-        PATHS /usr/lib /usr/local/lib)
+    NAMES gpstk
+    PATHS /usr/lib /usr/local/lib
+)
 
 
 
@@ -86,8 +88,8 @@ add_message_files(
 
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
-        DEPENDENCIES
-        std_msgs  # Or other packages containing msgs
+    DEPENDENCIES
+    std_msgs  # Or other packages containing msgs
 )
 
 ################################################
@@ -120,7 +122,7 @@ generate_messages(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-        CATKIN_DEPENDS message_runtime
+    CATKIN_DEPENDS message_runtime
 )
 
 catkin_package(
@@ -143,8 +145,19 @@ SET( SRCS_RAW_REC
 
 ##
 SET( SRCS_VIZ_HELP
-        src/viz_helper_node.cpp
-        src/viz_helper_main.cpp
+    src/viz_helper_node.cpp
+    src/viz_helper_main.cpp
+)
+
+##SRCS files. Trilateration library
+SET(SRCS_TR_LIB
+    include/trilateration/src/trilateration.cpp
+)
+
+##
+SET(SRCS_TRILAT_NODE
+    src/trilateration_node.cpp
+    src/trilateration_main.cpp
 )
 
 
@@ -156,8 +169,11 @@ SET( SRCS_VIZ_HELP
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-  ${catkin_INCLUDE_DIRS}
+    ${catkin_INCLUDE_DIRS}
 )
+IF(Ceres_FOUND)
+    INCLUDE_DIRECTORIES(${CERES_INCLUDE_DIRS})
+ENDIF(Ceres_FOUND)
 
 ## cpp executable
 add_executable(raw_receiver_node ${SRCS_RAW_REC} )
@@ -166,3 +182,8 @@ target_link_libraries(raw_receiver_node ${catkin_LIBRARIES} gpstk)
 add_executable(viz_helper ${SRCS_VIZ_HELP} )
 target_link_libraries(viz_helper ${catkin_LIBRARIES})
 
+
+IF(Ceres_FOUND)
+    add_executable(trilat_node ${SRCS_TRILAT_NODE} ${SRCS_TR_LIB})
+    target_link_libraries(trilat_node ${catkin_LIBRARIES} ${CERES_LIBRARIES})
+ENDIF(Ceres_FOUND)

@@ -15,6 +15,8 @@
 #include <tf/transform_broadcaster.h>
 #include <nav_msgs/Odometry.h>
 
+//to manage quaternions
+#include <Eigen/Geometry>
 
 class VisualizationHelperNode
 {
@@ -24,10 +26,19 @@ public:
 
     void pseudorangeCallback(const asterx1_node::SatPrArray::ConstPtr &msg);
 
+
+    Eigen::Quaterniond rotateSatelliteFrame(const asterx1_node::SatPr &sat);
+
+
 protected:
     void publishSat(const asterx1_node::SatPr &sat);
+    void publishSatVelocity(const asterx1_node::SatPr &sat);
+    void publishOdometry(const asterx1_node::SatPr &sat, const Eigen::Quaterniond &rotation);
+    void publishSatSphere(const asterx1_node::SatPr &sat);
+
     void publishEarth();
 
+    std::string getSatelliteFrame(int index);
 
 public:
     const std::string WORLD_FRAME = "world";

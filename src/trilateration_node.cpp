@@ -40,8 +40,9 @@ void TrilaterationNode::pseudorangeCallback(const asterx1_node::SatPrArray::Cons
     Receiver estRec = tr.computePosition(measurements);
 
     std::cout << " ---> Estimation:\t" << estRec.toString() << std::endl;
-    std::cout << "     diff coords:\t" << (estRec.pos + -lastFix).toString() << std::endl;
-    std::cout << "           error:\t" << estRec.pos.distanceTo(lastFix) << std::endl;
+    std::cout << "            real:\t " << lastFix.toString() << std::endl;
+    std::cout << "     diff coords:\t " << (estRec.pos + -lastFix).toString() << std::endl;
+    std::cout << "           error:\t  " << estRec.pos.distanceTo(lastFix) << std::endl;
 
 
     // Sets the guess for the next simulation in the actual position

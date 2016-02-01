@@ -35,6 +35,10 @@ protected:
     // Subscriber (pseudoranges)
     ros::Subscriber pseudorangeSub;
     ros::Subscriber fixEcefSub; // fix ecef subscriber
+
+    // Publisher
+    ros::Publisher estFixPub;
+
 };
 
 

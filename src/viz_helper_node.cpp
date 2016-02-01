@@ -7,10 +7,14 @@
 VisualizationHelperNode::VisualizationHelperNode() :
         nh(ros::this_node::getName())
 {
-    pseudorangeSub = nh.subscribe("/sat_pseudoranges", 1000, &VisualizationHelperNode::pseudorangeCallback, this);
+    // Publishers
+    pseudorangeSub = nh.subscribe("/raw_receiver_node/sat_pseudoranges", 1000, &VisualizationHelperNode::pseudorangeCallback, this);
+    realFixSub = nh.subscribe("/iri_asterx1_gps/gps_ecef", 1000, &VisualizationHelperNode::realFixCallback, this);
+    estFixSub = nh.subscribe("/trilat_node/est_fix", 1000, &VisualizationHelperNode::estFixCallback, this);
 
-    markerPub = nh.advertise<visualization_msgs::Marker>("/visualization_marker", 1000);
-    odomAllPub = nh.advertise<nav_msgs::Odometry>("/odom_all", 50);
+    // Listeners
+    markerPub = nh.advertise<visualization_msgs::Marker>("visualization_marker", 1000);
+    odomAllPub = nh.advertise<nav_msgs::Odometry>("odom_all", 50);
 
     scale = KILOMETERS;
 }
@@ -28,9 +32,6 @@ void VisualizationHelperNode::pseudorangeCallback(const asterx1_node::SatPrArray
         publishSat(sat);
 
     }
-
-    //TODO eliminare da rviz i satelliti non più presenti
-
 
     publishEarth();
 
@@ -66,7 +67,7 @@ void VisualizationHelperNode::publishSat(const asterx1_node::SatPr &sat)
     m.color.b = 0.0f;
     m.color.a = 0.5;
 
-    m.lifetime = ros::Duration(0.5); //after tot seconds satellites are deleted
+    m.lifetime = ros::Duration(LIFETIME_SHORT); //after tot seconds satellites are deleted
 
     markerPub.publish(m);
 
@@ -154,7 +155,7 @@ void VisualizationHelperNode::publishSatVelocity(const asterx1_node::SatPr &sat)
     m.color.b = 1.0f;
     m.color.a = 1.0;
 
-    m.lifetime = ros::Duration(0.5);
+    m.lifetime = ros::Duration(LIFETIME_SHORT);
 
     markerPub.publish(m);
 }
@@ -168,7 +169,7 @@ void VisualizationHelperNode::publishSatSphere(const asterx1_node::SatPr &sat)
     // TODO fallo che cosi ti rendi conto di com'è il pseudorange
     // TODO fallo che cosi ti rendi conto di com'è il pseudorange
     // TODO fallo che cosi ti rendi conto di com'è il pseudorange
-    
+
 }
 
 void VisualizationHelperNode::publishEarth()
@@ -253,4 +254,101 @@ Eigen::Quaterniond VisualizationHelperNode::rotateSatelliteFrame(const asterx1_n
 
 
     return rotation;
+}
+
+void VisualizationHelperNode::realFixCallback(const iri_asterx1_gps::NavSatFix_ecef::ConstPtr &msg)
+{
+    //std::cout << "real fix " << msg->x << ", " <<msg->y << ", " <<msg->z << ", " << "\n";
+    publishRealFix(msg->x, msg->y, msg->z);
+}
+
+
+void VisualizationHelperNode::publishRealFix(double x, double y, double z)
+{
+    visualization_msgs::Marker m;
+    m.header.frame_id = WORLD_FRAME;
+    m.header.stamp = ros::Time::now();
+
+    // Set the namespace and id for this marker.  This serves to create a unique ID
+    // Any marker sent with the same namespace and id will overwrite the old one
+    m.ns = "realFix";
+    m.id = 1;
+
+    // Set the marker type.
+    m.type = visualization_msgs::Marker::SPHERE;
+
+    // Set the marker action.  Options are ADD, DELETE, and new in ROS Indigo: 3 (DELETEALL)
+    m.action = visualization_msgs::Marker::ADD;
+
+    // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
+    m.pose.position.x = x * scale;
+    m.pose.position.y = y * scale;
+    m.pose.position.z = z * scale;
+    m.pose.orientation.x = 0.0;
+    m.pose.orientation.y = 0.0;
+    m.pose.orientation.z = 0.0;
+    m.pose.orientation.w = 1.0;
+
+    // Set the scale of the marker -- 1x1x1 here means 1m on a side
+    m.scale.x = EARTH_RADIUS / 10 * scale;
+    m.scale.y = EARTH_RADIUS / 10 * scale;
+    m.scale.z = EARTH_RADIUS / 10 * scale;
+
+    // Set the color -- be sure to set alpha to something non-zero!
+    m.color.r = 1.0f;
+    m.color.g = 0.0f;
+    m.color.b = 0.0f;
+    m.color.a = 1.0;
+
+    m.lifetime = ros::Duration(LIFETIME_SHORT);
+
+    markerPub.publish(m);
+}
+
+void VisualizationHelperNode::estFixCallback(const iri_asterx1_gps::NavSatFix_ecef::ConstPtr &msg)
+{
+    std::cout << "estimated fix " << msg->x << ", " <<msg->y << ", " <<msg->z << ", " << "\n";
+    publishEstFix(msg->x, msg->y, msg->z);
+}
+
+void VisualizationHelperNode::publishEstFix(double x, double y, double z)
+{
+    visualization_msgs::Marker m;
+    m.header.frame_id = WORLD_FRAME;
+    m.header.stamp = ros::Time::now();
+
+    // Set the namespace and id for this marker.  This serves to create a unique ID
+    // Any marker sent with the same namespace and id will overwrite the old one
+    m.ns = "estFix";
+    m.id = 1;
+
+    // Set the marker type.
+    m.type = visualization_msgs::Marker::SPHERE;
+
+    // Set the marker action.  Options are ADD, DELETE, and new in ROS Indigo: 3 (DELETEALL)
+    m.action = visualization_msgs::Marker::ADD;
+
+    // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
+    m.pose.position.x = x * scale;
+    m.pose.position.y = y * scale;
+    m.pose.position.z = z * scale;
+    m.pose.orientation.x = 0.0;
+    m.pose.orientation.y = 0.0;
+    m.pose.orientation.z = 0.0;
+    m.pose.orientation.w = 1.0;
+
+    // Set the scale of the marker -- 1x1x1 here means 1m on a side
+    m.scale.x = EARTH_RADIUS / 10 * scale;
+    m.scale.y = EARTH_RADIUS / 10 * scale;
+    m.scale.z = EARTH_RADIUS / 10 * scale;
+
+    // Set the color -- be sure to set alpha to something non-zero!
+    m.color.r = 0.0f;
+    m.color.g = 0.0f;
+    m.color.b = 1.0f;
+    m.color.a = 1.0;
+
+    m.lifetime = ros::Duration(LIFETIME_SHORT);
+
+    markerPub.publish(m);
 }

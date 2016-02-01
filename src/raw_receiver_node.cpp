@@ -9,7 +9,7 @@ RawReceiverNode::RawReceiverNode() :
     fixLlaSub = nh.subscribe("/iri_asterx1_gps/gps", 1000, &RawReceiverNode::fixLlaCallback, this);
     fixEcefSub = nh.subscribe("/iri_asterx1_gps/gps_ecef", 1000, &RawReceiverNode::fixEcefCallback, this);
 
-    observationPub = nh.advertise<asterx1_node::SatPrArray>("/sat_pseudoranges", 5000);
+    observationPub = nh.advertise<asterx1_node::SatPrArray>("sat_pseudoranges", 5000);
 
     //GPStk stuff
     tropModelPtr=&noTropModel;//if there is not a tropospheric model

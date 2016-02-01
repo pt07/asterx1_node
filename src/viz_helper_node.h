@@ -7,8 +7,11 @@
 
 #include <ros/ros.h>
 
+// Messages
 #include "asterx1_node/SatPr.h"
 #include "asterx1_node/SatPrArray.h"
+
+#include "iri_asterx1_gps/NavSatFix_ecef.h"
 
 #include <visualization_msgs/Marker.h>
 
@@ -25,6 +28,8 @@ public:
     ~VisualizationHelperNode();
 
     void pseudorangeCallback(const asterx1_node::SatPrArray::ConstPtr &msg);
+    void realFixCallback(const iri_asterx1_gps::NavSatFix_ecef::ConstPtr &msg);
+    void estFixCallback(const iri_asterx1_gps::NavSatFix_ecef::ConstPtr &msg);
 
 
     Eigen::Quaterniond rotateSatelliteFrame(const asterx1_node::SatPr &sat);
@@ -35,6 +40,8 @@ protected:
     void publishSatVelocity(const asterx1_node::SatPr &sat);
     void publishOdometry(const asterx1_node::SatPr &sat, const Eigen::Quaterniond &rotation);
     void publishSatSphere(const asterx1_node::SatPr &sat);
+    void publishRealFix(double x, double y, double z);
+    void publishEstFix(double x, double y, double z);
 
     void publishEarth();
 
@@ -55,6 +62,8 @@ protected:
 
     // Subscriber (pseudoranges)
     ros::Subscriber pseudorangeSub;
+    ros::Subscriber realFixSub; // subscriber of fix position in ecef, computed by sensor
+    ros::Subscriber estFixSub; // subscriber of fix position in ecef, computed by trilateration node
 
     // Publisher (markers)
     ros::Publisher markerPub;
@@ -63,6 +72,8 @@ protected:
     std::vector<ros::Publisher> odomPub;
 
     tf::TransformBroadcaster transBroadcaster;
+
+    const double LIFETIME_SHORT = 0.5;
 };
 
 

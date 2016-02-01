@@ -44,6 +44,22 @@
 
 class RawReceiverNode
 {
+public:
+    RawReceiverNode();
+    ~RawReceiverNode();
+
+    asterx1_node::SatPr getSatMsg(gpstk::SatID &prn, ros::Time &time, double pr, double x, double y, double z, double vx, double vy, double vz);
+
+    void obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr& msg);
+    void navCallback(const iri_asterx1_gps::GPS_nav::ConstPtr& msg);
+    void fixLlaCallback(const sensor_msgs::NavSatFix::ConstPtr &msg);
+    void fixEcefCallback(const iri_asterx1_gps::NavSatFix_ecef::ConstPtr &msg);
+
+protected:
+    gpstk::CivilTime getTimeGPS(unsigned int tow, unsigned short wnc);
+
+//    void calculateFixGPStk(const iri_asterx1_gps::GPS_meas::ConstPtr &msg);
+
 protected:
     // ROS node handle
     ros::NodeHandle nh;
@@ -71,23 +87,5 @@ protected:
     // Debug stuff
     bool printFixEcef = false;
     bool printFixLla = false;
-
-
-public:
-    RawReceiverNode();
-    ~RawReceiverNode();
-
-    asterx1_node::SatPr getSatMsg(gpstk::SatID &prn, ros::Time &time, double pr, double x, double y, double z, double vx, double vy, double vz);
-
-    void obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr& msg);
-    void navCallback(const iri_asterx1_gps::GPS_nav::ConstPtr& msg);
-    void fixLlaCallback(const sensor_msgs::NavSatFix::ConstPtr &msg);
-    void fixEcefCallback(const iri_asterx1_gps::NavSatFix_ecef::ConstPtr &msg);
-
-protected:
-    gpstk::CivilTime getTimeGPS(unsigned int tow, unsigned short wnc);
-
-//    void calculateFixGPStk(const iri_asterx1_gps::GPS_meas::ConstPtr &msg);
-
 };
 #endif

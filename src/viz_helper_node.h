@@ -73,7 +73,7 @@ protected:
 
     tf::TransformBroadcaster transBroadcaster;
 
-    const double LIFETIME_SHORT = 0.5;
+    const double LIFETIME_SHORT = 10;
 };
 
 

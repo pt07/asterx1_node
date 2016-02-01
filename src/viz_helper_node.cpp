@@ -166,8 +166,10 @@ void VisualizationHelperNode::publishSatVelocity(const asterx1_node::SatPr &sat)
 
 void VisualizationHelperNode::publishSatSphere(const asterx1_node::SatPr &sat)
 {
+    std::cout << "publishing sat sphere of radius " << sat.pseudorange << "\n";
+
     visualization_msgs::Marker m;
-    m.header.frame_id = getSatelliteFrame(sat.sat_id);
+    m.header.frame_id = WORLD_FRAME;
     m.header.stamp = ros::Time::now();
 
     // Set the namespace and id for this marker.  This serves to create a unique ID
@@ -182,18 +184,18 @@ void VisualizationHelperNode::publishSatSphere(const asterx1_node::SatPr &sat)
     m.action = visualization_msgs::Marker::ADD;
 
     // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
-    m.pose.position.x = 0;
-    m.pose.position.y = 0;
-    m.pose.position.z = 0;
+    m.pose.position.x = sat.x * scale;
+    m.pose.position.y = sat.y * scale;
+    m.pose.position.z = sat.z * scale;
     m.pose.orientation.x = 0.0;
     m.pose.orientation.y = 0.0;
     m.pose.orientation.z = 0.0;
     m.pose.orientation.w = 0.1;
 
     // Set the scale of the marker -- 1x1x1 here means 1m on a side
-    m.scale.x = sat.pseudorange * scale;
-    m.scale.y = sat.pseudorange * scale;
-    m.scale.z = sat.pseudorange * scale;
+    m.scale.x = 2 * sat.pseudorange * scale;
+    m.scale.y = 2 * sat.pseudorange * scale;
+    m.scale.z = 2 * sat.pseudorange * scale;
 
     // Set the color -- be sure to set alpha to something non-zero!
     m.color.r = 0.0f;
@@ -234,15 +236,15 @@ void VisualizationHelperNode::publishEarth()
     m.pose.orientation.w = 1.0;
 
     // Set the scale of the marker -- 1x1x1 here means 1m on a side
-    m.scale.x = EARTH_RADIUS * scale;
-    m.scale.y = EARTH_RADIUS * scale;
-    m.scale.z = EARTH_RADIUS * scale;
+    m.scale.x = 2 * EARTH_RADIUS * scale;
+    m.scale.y = 2 * EARTH_RADIUS * scale;
+    m.scale.z = 2 * EARTH_RADIUS * scale;
 
     // Set the color -- be sure to set alpha to something non-zero!
     m.color.r = 0.0f;
     m.color.g = 1.0f;
     m.color.b = 0.0f;
-    m.color.a = 0.1;
+    m.color.a = 0.38;
 
     m.lifetime = ros::Duration();
 

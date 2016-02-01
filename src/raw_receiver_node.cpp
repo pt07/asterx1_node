@@ -9,7 +9,7 @@ RawReceiverNode::RawReceiverNode() :
     fixLlaSub = nh.subscribe("/iri_asterx1_gps/gps", 1000, &RawReceiverNode::fixLlaCallback, this);
     fixEcefSub = nh.subscribe("/iri_asterx1_gps/gps_ecef", 1000, &RawReceiverNode::fixEcefCallback, this);
 
-    observationPub = nh.advertise<asterx1_node::SatPrArray>("sat_pseudoranges", 5000);
+    observationPub = nh.advertise<asterx1_node::SatPrArray>("/sat_pseudoranges", 5000);
 
     //GPStk stuff
     tropModelPtr=&noTropModel;//if there is not a tropospheric model
@@ -113,7 +113,7 @@ void RawReceiverNode::obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr& msg
 
             gpstk::Triple vel = bcestore.getXvt(prnVec[i], getTimeGPS(msg->time_stamp.tow, msg->time_stamp.wnc)).getVel();
 
-            observation.measurements.push_back(getSatMsg(prnVec[i], currentTime, /*rangeVec[i]/*TODO questo è il pseudorange corretto da raim solver */calcPos[i][3], calcPos[i][0], calcPos[i][1], calcPos[i][2], vel[0], vel[1], vel[2]));
+            observation.measurements.push_back(getSatMsg(prnVec[i], currentTime, rangeVec[i]/*TODO questo è il pseudorange corretto da raim solver calcPos[i][3]*/, calcPos[i][0], calcPos[i][1], calcPos[i][2], vel[0], vel[1], vel[2]));
         }
     }
 

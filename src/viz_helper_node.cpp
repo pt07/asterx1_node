@@ -8,9 +8,9 @@ VisualizationHelperNode::VisualizationHelperNode() :
         nh(ros::this_node::getName())
 {
     // Publishers
-    pseudorangeSub = nh.subscribe("/raw_receiver_node/sat_pseudoranges", 1000, &VisualizationHelperNode::pseudorangeCallback, this);
+    pseudorangeSub = nh.subscribe("/sat_pseudoranges", 1000, &VisualizationHelperNode::pseudorangeCallback, this);
     realFixSub = nh.subscribe("/iri_asterx1_gps/gps_ecef", 1000, &VisualizationHelperNode::realFixCallback, this);
-    estFixSub = nh.subscribe("/trilat_node/est_fix", 1000, &VisualizationHelperNode::estFixCallback, this);
+    estFixSub = nh.subscribe("/est_fix", 1000, &VisualizationHelperNode::estFixCallback, this);
 
     // Listeners
     markerPub = nh.advertise<visualization_msgs::Marker>("visualization_marker", 1000);
@@ -85,6 +85,9 @@ void VisualizationHelperNode::publishSat(const asterx1_node::SatPr &sat)
 
     // publish earth vector
     //TODO
+
+    // publish sat sphere
+    publishSatSphere(sat);
 
 }
 
@@ -163,12 +166,44 @@ void VisualizationHelperNode::publishSatVelocity(const asterx1_node::SatPr &sat)
 
 void VisualizationHelperNode::publishSatSphere(const asterx1_node::SatPr &sat)
 {
-    //TODO pubblica una sfera di raggio pseudorange, così vedi se ha senso
-    // TODO fallo che cosi ti rendi conto di com'è il pseudorange
-    // TODO fallo che cosi ti rendi conto di com'è il pseudorange
-    // TODO fallo che cosi ti rendi conto di com'è il pseudorange
-    // TODO fallo che cosi ti rendi conto di com'è il pseudorange
-    // TODO fallo che cosi ti rendi conto di com'è il pseudorange
+    visualization_msgs::Marker m;
+    m.header.frame_id = getSatelliteFrame(sat.sat_id);
+    m.header.stamp = ros::Time::now();
+
+    // Set the namespace and id for this marker.  This serves to create a unique ID
+    // Any marker sent with the same namespace and id will overwrite the old one
+    m.ns = "sat_sphere";
+    m.id = sat.sat_id;
+
+    // Set the marker type.
+    m.type = visualization_msgs::Marker::SPHERE;
+
+    // Set the marker action.  Options are ADD, DELETE, and new in ROS Indigo: 3 (DELETEALL)
+    m.action = visualization_msgs::Marker::ADD;
+
+    // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
+    m.pose.position.x = 0;
+    m.pose.position.y = 0;
+    m.pose.position.z = 0;
+    m.pose.orientation.x = 0.0;
+    m.pose.orientation.y = 0.0;
+    m.pose.orientation.z = 0.0;
+    m.pose.orientation.w = 0.1;
+
+    // Set the scale of the marker -- 1x1x1 here means 1m on a side
+    m.scale.x = sat.pseudorange * scale;
+    m.scale.y = sat.pseudorange * scale;
+    m.scale.z = sat.pseudorange * scale;
+
+    // Set the color -- be sure to set alpha to something non-zero!
+    m.color.r = 0.0f;
+    m.color.g = 0.5f;
+    m.color.b = 0.5f;
+    m.color.a = 0.2;
+
+    m.lifetime = ros::Duration(LIFETIME_SHORT);
+
+    markerPub.publish(m);
 
 }
 

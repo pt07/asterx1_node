@@ -8,11 +8,11 @@ TrilaterationNode::TrilaterationNode():
         nh(ros::this_node::getName())
 {
     // Listeners
-    pseudorangeSub = nh.subscribe("/raw_receiver_node/sat_pseudoranges", 1000, &TrilaterationNode::pseudorangeCallback, this);
+    pseudorangeSub = nh.subscribe("/sat_pseudoranges", 1000, &TrilaterationNode::pseudorangeCallback, this);
     fixEcefSub = nh.subscribe("/iri_asterx1_gps/gps_ecef", 1000, &TrilaterationNode::fixEcefCallback, this);
 
     //Publisher
-    estFixPub = nh.advertise<iri_asterx1_gps::NavSatFix_ecef>("est_fix", 5000);
+    estFixPub = nh.advertise<iri_asterx1_gps::NavSatFix_ecef>("/est_fix", 5000);
 
 }
 

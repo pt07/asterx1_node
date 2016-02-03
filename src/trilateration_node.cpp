@@ -49,6 +49,37 @@ void TrilaterationNode::pseudorangeCallback(const asterx1_node::SatPrArray::Cons
     std::cout << "           error:\t  " << estRec.pos.distanceTo(lastFix) << std::endl;
 
 
+    //*************** debug purpose ********************
+    std::cout << "\nRANGES:" << std::endl;
+    double sum_r = 0, sum_e = 0;
+    for (int i = 0; i < msg->measurements.size(); ++i)
+    {
+        const asterx1_node::SatPr sat = msg->measurements[i];
+
+        Point<double> sat_pos(sat.x, sat.y, sat.z);
+
+        double sq_r = pow(sat_pos.distanceTo(lastFix)    - sat.pseudorange, 2);
+        double sq_e = pow(sat_pos.distanceTo(estRec.pos) - sat.pseudorange, 2);
+
+        std::cout << "\t*(*)\t*sat" << sat.sat_id << ": " << sat.pseudorange << "\tpr sent" << std::endl;
+        std::cout << "\t (R)\t-sat" << sat.sat_id << ": " << sat_pos.distanceTo(lastFix) << "\trange with REAL pos" << std::endl;
+        std::cout << "\t (E)\t sat" << sat.sat_id << ": " << sat_pos.distanceTo(estRec.pos) << "\trange with est pos" << std::endl;
+
+        sum_r += sq_r;
+        sum_e += sq_e;
+    }
+
+
+    std::cout << std::endl;
+    std::cout << "\t*(R)\t*mean error " << sqrt(sum_r/msg->measurements.size()) << std::endl;
+    std::cout << "\t (E)\t mean error " << sqrt(sum_e/msg->measurements.size()) << std::endl;
+
+
+    //************ END DEBUG PRINTINGS ***********
+
+
+
+
     // Sets the guess for the next simulation in the actual position
     tr.setInitialReceiverGuess(estRec);
 

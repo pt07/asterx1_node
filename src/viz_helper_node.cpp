@@ -9,8 +9,9 @@ VisualizationHelperNode::VisualizationHelperNode() :
 {
     // Publishers
     pseudorangeSub = nh.subscribe("/sat_pseudoranges", 1000, &VisualizationHelperNode::pseudorangeCallback, this);
-    realFixSub = nh.subscribe("/iri_asterx1_gps/gps_ecef", 1000, &VisualizationHelperNode::realFixCallback, this);
     estFixSub = nh.subscribe("/est_fix", 1000, &VisualizationHelperNode::estFixCallback, this);
+    realFixSub = nh.subscribe("/iri_asterx1_gps/gps_ecef", 1000, &VisualizationHelperNode::realFixCallback, this);// both publisher receive the real fix. there are 2 because i have 2 different ros node that can publish
+    realFixSub2 = nh.subscribe("/real_fix", 1000, &VisualizationHelperNode::realFixCallback, this);// both publisher receive the real fix. there are 2 because i have 2 different ros node that can publish
 
     // Listeners
     markerPub = nh.advertise<visualization_msgs::Marker>("visualization_marker", 1000);
@@ -166,7 +167,7 @@ void VisualizationHelperNode::publishSatVelocity(const asterx1_node::SatPr &sat)
 
 void VisualizationHelperNode::publishSatSphere(const asterx1_node::SatPr &sat)
 {
-    std::cout << "publishing sat sphere of radius " << sat.pseudorange << "\n";
+    //std::cout << "publishing sat sphere of radius " << sat.pseudorange << "\n";
 
     visualization_msgs::Marker m;
     m.header.frame_id = WORLD_FRAME;
@@ -360,7 +361,7 @@ void VisualizationHelperNode::publishEstFix(double x, double y, double z)
     m.id = 1;
 
     // Set the marker type.
-    m.type = visualization_msgs::Marker::SPHERE;
+    m.type = visualization_msgs::Marker::CUBE;
 
     // Set the marker action.  Options are ADD, DELETE, and new in ROS Indigo: 3 (DELETEALL)
     m.action = visualization_msgs::Marker::ADD;
@@ -375,9 +376,9 @@ void VisualizationHelperNode::publishEstFix(double x, double y, double z)
     m.pose.orientation.w = 1.0;
 
     // Set the scale of the marker -- 1x1x1 here means 1m on a side
-    m.scale.x = EARTH_RADIUS / 10 * scale;
-    m.scale.y = EARTH_RADIUS / 10 * scale;
-    m.scale.z = EARTH_RADIUS / 10 * scale;
+    m.scale.x = EARTH_RADIUS / 13 * scale;
+    m.scale.y = EARTH_RADIUS / 13 * scale;
+    m.scale.z = EARTH_RADIUS / 13 * scale;
 
     // Set the color -- be sure to set alpha to something non-zero!
     m.color.r = 0.0f;

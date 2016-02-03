@@ -87,7 +87,7 @@ void RawReceiverNode::obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr& msg
         std::cout << "\t% of good entries = 0/" << prnVec.size() << "\n";
         return;
     }
-    //NB: verify that the number of good entries (Satellite[.] > 0) is > 4 before proceeding
+
     int goodEntries = 0;
     for (int i = 0; i < prnVec.size(); ++i)
     {
@@ -123,26 +123,25 @@ void RawReceiverNode::obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr& msg
 }
 
 
-
 void RawReceiverNode::navCallback(const iri_asterx1_gps::GPS_nav::ConstPtr& msg)
 {
-    std::cout << "### NAV callback: sat " << (short)msg->sat_id
-              << ", time " << getTimeGPS(msg->time_stamp.tow, msg->time_stamp.wnc)
-              << std::endl;
+//    std::cout << "### NAV callback: sat " << (short)msg->sat_id
+//              << ", time " << getTimeGPS(msg->time_stamp.tow, msg->time_stamp.wnc)
+//              << std::endl;
 
 
     gpstk::Rinex3NavData eph;
 
     eph.time = getTimeGPS(msg->time_stamp.tow, msg->time_stamp.wnc);
     eph.satSys = "G";
-    eph.PRNID = msg->sat_id;
+    eph.PRNID = (short)msg->sat_id;
     eph.sat = gpstk::RinexSatID((short)msg->sat_id, gpstk::SatID::systemGPS);
-    eph.HOWtime = (int)msg->time_stamp.tow / 1000;
+    eph.HOWtime = (long)msg->time_stamp.tow / 1000;
     eph.weeknum = msg->wn;//msg->time_stamp.wnc; //******** quale dei 2?
     eph.accuracy = 1;//***************************************
     eph.health = (short)msg->health;
-    eph.codeflgs = msg->ca_or_pon_l2;//***********(credo di si)
-    eph.L2Pdata = msg->l2_data_flag;
+    eph.codeflgs = (short)msg->ca_or_pon_l2;//***********(credo di si)
+    eph.L2Pdata = (short)msg->l2_data_flag;
     eph.IODC = (double)msg->iodc;
     eph.IODE = (double)msg->iode2;
 
@@ -175,26 +174,53 @@ void RawReceiverNode::navCallback(const iri_asterx1_gps::GPS_nav::ConstPtr& msg)
 
     try
     {
-
-        //TODO soluzione temporanea al problema che se aggiungo una eph che è gia presente crasha tutto
-        if(! bcestore.isPresent(eph.sat))
+        if( ! bcestore.isPresent(eph.sat))
         {
-//            std::cout << "bcestore: adding sat " << eph.sat.id << " at time " << eph.time << " NOT present\n";
+            std::cout << "###BCESTORE: sat" << eph.sat.id << "'s eph NOT present --> ADDING it\n";
             // Add the ephemeris just created to the ephemerides store
             bcestore.addEphemeris(eph);
-            std::cout << "\toggetto aggiunto\n";
+
+            // just to remember the last ephemeris added for each satellite
+            iodcs[eph.sat.id] = (unsigned short)eph.IODC;
+        }
+        else //if is already present
+        {
+            if (iodcs[eph.sat.id] != msg->iodc)
+            {
+                std::cout << "###BCESTORE: sat" << eph.sat.id << "'s eph is old --> UPDATING it\n";
+                bcestore.addEphemeris(eph);
+                iodcs[eph.sat.id] = (unsigned short)eph.IODC;
+            }
+            else
+            {
+//                std::cout << "###BCESTORE: sat" << eph.sat.id << "'s eph ALREADY PRESENT\n";
+            }
         }
 
+
+
+//        if(bcestore.isPresent(eph.sat) && iodcs[eph.sat.id] == msg->iodc)
+//        {
+//            std::cout << "bcestore: eph sat " << eph.sat.id << " ALREADY PRESENT\n";
+//        }
+//        else
+//        {
+//            std::cout << "bcestore: adding sat " << eph.sat.id << " at time " << eph.time << " NOT present\n";
+//            // Add the ephemeris just created to the ephemerides store
+//            bcestore.addEphemeris(eph);
+//
+//            // just to remember the last ephemeris added for each satellite
+//            iodcs[eph.sat.id] = eph.IODC;
+//        }
+
     }
-    catch(gpstk::Exception& e)
+    catch(gpstk::Exception &e)
     {
-        std::cerr << eph << std::endl;
-        exit(0);
+        std::cerr << e.what() << std::endl;
     }
     catch (...)
     {
         std::cerr << "Caught an unexpected exception." << std::endl;
-        exit(0);
     }
 
     // print recap of eph store

@@ -63,6 +63,7 @@ protected:
     // Subscriber (pseudoranges)
     ros::Subscriber pseudorangeSub;
     ros::Subscriber realFixSub; // subscriber of fix position in ecef, computed by sensor
+    ros::Subscriber realFixSub2; // subscriber of fix position in ecef, computed by gpstk
     ros::Subscriber estFixSub; // subscriber of fix position in ecef, computed by trilateration node
 
     // Publisher (markers)
@@ -73,7 +74,7 @@ protected:
 
     tf::TransformBroadcaster transBroadcaster;
 
-    const double LIFETIME_SHORT = 10;
+    const double LIFETIME_SHORT = 0.5;
 };
 
 

@@ -8,7 +8,7 @@
  *      GPStk includes     *
  ***************************/
 // Class defining GPS system constants
-#include "GNSSconstants.hpp"
+//#include "GNSSconstants.hpp"
 // Class for storing "broadcast-type" ephemerides
 #include "GPSEphemerisStore.hpp"
 // Class for handling RAIM
@@ -21,9 +21,10 @@
 #include "WGS84Ellipsoid.hpp"
 // To create satellites with ID and satellite system (GPS in our case)
 #include <SatID.hpp>
-//tentativo con rinex nav data per le eph. se non funziona, togli sto include
+//TODO tentativo con rinex nav data per le eph. se non funziona, togli sto include
 #include "Rinex3NavData.hpp"
-
+//TODO tentativo con le eng ephemeris
+#include <EngEphemeris.hpp>
 /**************************
  *      ROS includes      *
  **************************/
@@ -83,6 +84,9 @@ protected:
 
     //forse sta gamma non serve, perchè non ho la frequenza l2 e di conseguenza non posso calcolare la ionocorr
     //const double gamma = (gpstk::L1_FREQ_GPS/gpstk::L2_FREQ_GPS)*(gpstk::L1_FREQ_GPS/gpstk::L2_FREQ_GPS);
+
+    //to add only new ephemeris
+    unsigned short iodcs[32];
 
     // Debug stuff
     bool printFixEcef = false;

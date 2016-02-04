@@ -5,6 +5,14 @@
  *      GPStk includes     *
  ***************************/
 #include <EngEphemeris.hpp>
+// Class for storing "broadcast-type" ephemerides
+#include "GPSEphemerisStore.hpp"
+// Class for handling RAIM
+#include "PRSolution2.hpp"
+// Class for handling tropospheric models
+#include "TropModel.hpp"
+#include "Rinex3NavData.hpp"
+//#include "GPSEphemeris.hpp"
 
 /**************************
  *      ROS includes      *
@@ -35,8 +43,9 @@ public:
     ~RawReceiverNode();
 
     asterx1_node::SatPr createSatMsg(short sat_id, ros::Time &timeROS, double pr, gpstk::Xvt &sat);
+    asterx1_node::SatPr createSatMsg2(short sat_id, ros::Time &time, double pr, double x, double y, double z, double vx, double vy, double vz);
 
-    void obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr& msg);
+    void obsCallbackRAIM(const iri_asterx1_gps::GPS_meas::ConstPtr& msg);
     void navCallback(const iri_asterx1_gps::GPS_raw_frames::ConstPtr& msg);
 
 protected:
@@ -58,7 +67,14 @@ protected:
 
 
     // GPStk stuff
-    std::vector<gpstk::EngEphemeris> ephStore;
+    //std::vector<gpstk::EngEphemeris> ephStore;
+
+    // GPStk stuff
+    gpstk::GPSEphemerisStore bcestore; //object for storing ephemerides
+    gpstk::PRSolution2 raimSolver; //object for handling RAIM
+    gpstk::ZeroTropModel noTropModel;// Object for void-type tropospheric model (in case no meteorological RINEX is available)
+    gpstk::ZeroTropModel *tropModelPtr;// Pointer to one of the two available tropospheric models. It points to the void model by default
+
 
 };
 #endif

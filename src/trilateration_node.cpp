@@ -24,6 +24,11 @@ void TrilaterationNode::pseudorangeCallback(const asterx1_node::SatPrArray::Cons
 {
     std::cout << "Received " << msg->measurements.size() << " sat obs at " << msg->timestamp << "\n";
 
+    if(msg->measurements.size() < 4)
+    {
+        std::cout << "Not enough to trilaterate.\n";
+        return;
+    }
 
     std::vector<SatelliteMeasurement> measurements;
 

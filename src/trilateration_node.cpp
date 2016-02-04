@@ -47,45 +47,46 @@ void TrilaterationNode::pseudorangeCallback(const asterx1_node::SatPrArray::Cons
 
 
     Receiver estRec = tr.computePosition(measurements);
+    Point<double> estRecLLA = ecefToLla(estRec.pos);
+
 
     std::cout << " ---> Estimation:\t" << estRec.toString() << std::endl;
-    std::cout << "            real:\t " << lastFix.toString() << std::endl;
-    std::cout << "     diff coords:\t " << (estRec.pos + -lastFix).toString() << std::endl;
-    std::cout << "           error:\t  " << estRec.pos.distanceTo(lastFix) << std::endl;
+    std::cout << "            real:\t " << lastFixECEF.toString() << std::endl;
+    std::cout << "     diff coords:\t " << (estRec.pos + -lastFixECEF).toString() << std::endl;
+    std::cout << "           error:\t  " << estRec.pos.distanceTo(lastFixECEF) << std::endl;
+    std::cout << "     (LLA)  real:\t " << (ecefToLla(lastFixECEF)).toString() << std::endl;
+    std::cout << "     (LLA)   est:\t " << estRecLLA.toString() << std::endl;
 
 
     //*************** debug purpose ********************
-    std::cout << "\nRANGES:" << std::endl;
-    double sum_r = 0, sum_e = 0;
-    for (int i = 0; i < msg->measurements.size(); ++i)
-    {
-        const asterx1_node::SatPr sat = msg->measurements[i];
-
-        Point<double> sat_pos(sat.x, sat.y, sat.z);
-
-        double sq_r = pow(sat_pos.distanceTo(lastFix)    - sat.pseudorange, 2);
-        double sq_e = pow(sat_pos.distanceTo(estRec.pos) - sat.pseudorange, 2);
-
-        std::cout << "\t*(*)\t*sat" << sat.sat_id << ": " << sat.pseudorange << "\tpr sent" << std::endl;
-        std::cout << "\t (R)\t-sat" << sat.sat_id << ": " << sat_pos.distanceTo(lastFix) << "\trange with REAL pos" << std::endl;
-        std::cout << "\t (E)\t sat" << sat.sat_id << ": " << sat_pos.distanceTo(estRec.pos) << "\trange with est pos" << std::endl;
-
-        sum_r += sq_r;
-        sum_e += sq_e;
-    }
-
-
-    std::cout << std::endl;
-    std::cout << "\t*(R)\t*mean error " << sqrt(sum_r/msg->measurements.size()) << std::endl;
-    std::cout << "\t (E)\t mean error " << sqrt(sum_e/msg->measurements.size()) << std::endl;
-
+//    std::cout << "\nRANGES:" << std::endl;
+//    double sum_r = 0, sum_e = 0;
+//    for (int i = 0; i < msg->measurements.size(); ++i)
+//    {
+//        const asterx1_node::SatPr sat = msg->measurements[i];
+//
+//        Point<double> sat_pos(sat.x, sat.y, sat.z);
+//
+//        double sq_r = pow(sat_pos.distanceTo(lastFixECEF) - sat.pseudorange, 2);
+//        double sq_e = pow(sat_pos.distanceTo(estRec.pos) - sat.pseudorange, 2);
+//
+//        std::cout << "\t*(*)\t*sat" << sat.sat_id << ": " << sat.pseudorange << "\tpr sent" << std::endl;
+//        std::cout << "\t (R)\t-sat" << sat.sat_id << ": " << sat_pos.distanceTo(lastFixECEF) << "\trange with REAL pos" << std::endl;
+//        std::cout << "\t (E)\t sat" << sat.sat_id << ": " << sat_pos.distanceTo(estRec.pos) << "\trange with est pos" << std::endl;
+//
+//        sum_r += sq_r;
+//        sum_e += sq_e;
+//    }
+//    std::cout << std::endl;
+//    std::cout << "\t*(R)\t*mean error " << sqrt(sum_r/msg->measurements.size()) << std::endl;
+//    std::cout << "\t (E)\t mean error " << sqrt(sum_e/msg->measurements.size()) << std::endl;
+//
 
     //************ END DEBUG PRINTINGS ***********
 
 
-
-
     // Sets the guess for the next simulation in the actual position
+    //TODO vedi se serve effetivamente
     tr.setInitialReceiverGuess(estRec);
 
     // publish result
@@ -99,12 +100,27 @@ void TrilaterationNode::pseudorangeCallback(const asterx1_node::SatPrArray::Cons
     estFixPub.publish(estFixMsg);
 }
 
+Point<double> TrilaterationNode::ecefToLla(const Point<double> &ecef)
+{
+    gpstk::Triple sol_ecef, sol_llr;
+    sol_ecef[0] = ecef.coords[0];
+    sol_ecef[1] = ecef.coords[1];
+    sol_ecef[2] = ecef.coords[2];
+
+    // conversione in coordinate geodetic
+    gpstk::WGS84Ellipsoid WGS84;
+    double AEarth = WGS84.a();
+    double eccSquared = WGS84.eccSquared();
+
+    gpstk::Position::convertCartesianToGeodetic(sol_ecef, sol_llr, AEarth , eccSquared);
+
+    return Point<double>(sol_llr[0], sol_llr[1], sol_llr[2]);
+}
 
 void TrilaterationNode::fixEcefCallback(const iri_asterx1_gps::NavSatFix_ecef::ConstPtr &msg)
 {
     //std::cout << "%%%%  FIX ecef = (" << msg->x << ", " << msg->y << ", " << msg->z << ")\n";
-    lastFix.setX(msg->x);
-    lastFix.setY(msg->y);
-    lastFix.setZ(msg->z);
+    lastFixECEF.setX(msg->x);
+    lastFixECEF.setY(msg->y);
+    lastFixECEF.setZ(msg->z);
 }
-

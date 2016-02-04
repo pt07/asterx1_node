@@ -185,5 +185,5 @@ target_link_libraries(viz_helper ${catkin_LIBRARIES})
 
 IF(Ceres_FOUND)
     add_executable(trilat_node ${SRCS_TRILAT_NODE} ${SRCS_TR_LIB})
-    target_link_libraries(trilat_node ${catkin_LIBRARIES} ${CERES_LIBRARIES})
+    target_link_libraries(trilat_node ${catkin_LIBRARIES} ${CERES_LIBRARIES} gpstk)
 ENDIF(Ceres_FOUND)

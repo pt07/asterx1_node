@@ -4,15 +4,6 @@
 /***************************
  *      GPStk includes     *
  ***************************/
-// Class defining GPS system constants
-//#include "GNSSconstants.hpp"
-// To convert coords from ecef to lla
-#include <Position.hpp>
-#include <Triple.hpp>
-#include "WGS84Ellipsoid.hpp"
-// To create satellites with ID and satellite system (GPS in our case)
-#include <SatID.hpp>
-//TODO tentativo con le eng ephemeris
 #include <EngEphemeris.hpp>
 
 /**************************
@@ -22,7 +13,7 @@
 
 // ROS messages
 #include "iri_asterx1_gps/GPS_meas.h"
-#include "iri_asterx1_gps/GPS_nav.h"
+#include "iri_asterx1_gps/GPS_raw_frames.h"
 #include "iri_asterx1_gps/NavSatFix_ecef.h"
 #include "sensor_msgs/NavSatFix.h"
 
@@ -43,20 +34,18 @@ public:
     RawReceiverNode();
     ~RawReceiverNode();
 
-    asterx1_node::SatPr getSatMsg(gpstk::SatID &prn, ros::Time &time, double pr, double x, double y, double z, double vx, double vy, double vz);
+    asterx1_node::SatPr createSatMsg(short sat_id, ros::Time &timeROS, double pr, gpstk::Xvt &sat);
 
     void obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr& msg);
-    void navCallback(const iri_asterx1_gps::GPS_nav::ConstPtr& msg);
+    void navCallback(const iri_asterx1_gps::GPS_raw_frames::ConstPtr& msg);
 
 protected:
-    gpstk::CivilTime getTimeGPS(unsigned int tow, unsigned short wnc);
+    gpstk::GPSWeekSecond getTimeGPS(unsigned int tow, unsigned short wnc);
 
-//    void calculateFixGPStk(const iri_asterx1_gps::GPS_meas::ConstPtr &msg);
 
 protected:
     // ROS node handle
     ros::NodeHandle nh;
-    ros::Time currentTime;
 
     // Subscribers
     ros::Subscriber obsSub; // obs (measurements) subscriber
@@ -69,7 +58,7 @@ protected:
 
 
     // GPStk stuff
-
+    std::vector<gpstk::EngEphemeris> ephStore;
 
 };
 #endif

@@ -2,7 +2,7 @@
  * Steps:
  *
  * rviz  (world main frame)
- * rosbag play src/asterx1_node/rosbags/2016-01-26-12-01-25.bag --r 5
+ * rosbag play ~/bagfiles/asd.bag -r 5 -l
  * rosrun asterx1_node raw_receiver_node
  * rosrun asterx1_node trilat_node
  * rosrun asterx1_node viz_helper

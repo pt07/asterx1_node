@@ -4,14 +4,14 @@
 
 #include "viz_helper_node.h"
 
-VisualizationHelperNode::VisualizationHelperNode() :
+VizHelperNode::VizHelperNode() :
         nh(ros::this_node::getName())
 {
     // Publishers
-    pseudorangeSub = nh.subscribe("/sat_pseudoranges", 1000, &VisualizationHelperNode::pseudorangeCallback, this);
-    estFixSub = nh.subscribe("/est_fix", 1000, &VisualizationHelperNode::estFixCallback, this);
-    realFixSub = nh.subscribe("/iri_asterx1_gps/gps_ecef", 1000, &VisualizationHelperNode::realFixCallback, this);// both publisher receive the real fix. there are 2 because i have 2 different ros node that can publish
-    realFixSub2 = nh.subscribe("/real_fix", 1000, &VisualizationHelperNode::realFixCallback, this);// both publisher receive the real fix. there are 2 because i have 2 different ros node that can publish
+    pseudorangeSub = nh.subscribe("/sat_pseudoranges", 1000, &VizHelperNode::pseudorangeCallback, this);
+    estFixSub = nh.subscribe("/est_fix", 1000, &VizHelperNode::estFixCallback, this);
+    realFixSub = nh.subscribe("/iri_asterx1_gps/gps_ecef", 1000, &VizHelperNode::realFixCallback, this);// both publisher receive the real fix. there are 2 because i have 2 different ros node that can publish
+    realFixSub2 = nh.subscribe("/real_fix", 1000, &VizHelperNode::realFixCallback, this);// both publisher receive the real fix. there are 2 because i have 2 different ros node that can publish
 
     // Listeners
     markerPub = nh.advertise<visualization_msgs::Marker>("visualization_marker", 1000);
@@ -20,9 +20,9 @@ VisualizationHelperNode::VisualizationHelperNode() :
     scale = KILOMETERS;
 }
 
-VisualizationHelperNode::~VisualizationHelperNode(){ }
+VizHelperNode::~VizHelperNode(){ }
 
-void VisualizationHelperNode::pseudorangeCallback(const asterx1_node::SatPrArray::ConstPtr &msg)
+void VizHelperNode::pseudorangeCallback(const asterx1_node::SatPrArray::ConstPtr &msg)
 {
     std::cout << "Visualizing " << msg->measurements.size() << " sats at " << msg->timestamp << "\n";
 
@@ -39,7 +39,7 @@ void VisualizationHelperNode::pseudorangeCallback(const asterx1_node::SatPrArray
 }
 
 
-void VisualizationHelperNode::publishSat(const asterx1_node::SatPr &sat)
+void VizHelperNode::publishSat(const asterx1_node::SatPr &sat)
 {
     visualization_msgs::Marker m;
     m.header.frame_id = WORLD_FRAME;
@@ -94,7 +94,7 @@ void VisualizationHelperNode::publishSat(const asterx1_node::SatPr &sat)
 
 
 
-void VisualizationHelperNode::publishOdometry(const asterx1_node::SatPr &sat, const Eigen::Quaterniond &rotation)
+void VizHelperNode::publishOdometry(const asterx1_node::SatPr &sat, const Eigen::Quaterniond &rotation)
 {
     /// publish the odometry message over ROS
     nav_msgs::Odometry odom;
@@ -128,7 +128,7 @@ void VisualizationHelperNode::publishOdometry(const asterx1_node::SatPr &sat, co
 }
 
 
-void VisualizationHelperNode::publishSatVelocity(const asterx1_node::SatPr &sat)
+void VizHelperNode::publishSatVelocity(const asterx1_node::SatPr &sat)
 {
     visualization_msgs::Marker m;
     m.header.frame_id = getSatelliteFrame(sat.sat_id);
@@ -165,7 +165,7 @@ void VisualizationHelperNode::publishSatVelocity(const asterx1_node::SatPr &sat)
 }
 
 
-void VisualizationHelperNode::publishSatSphere(const asterx1_node::SatPr &sat)
+void VizHelperNode::publishSatSphere(const asterx1_node::SatPr &sat)
 {
     //std::cout << "publishing sat sphere of radius " << sat.pseudorange << "\n";
 
@@ -210,7 +210,7 @@ void VisualizationHelperNode::publishSatSphere(const asterx1_node::SatPr &sat)
 
 }
 
-void VisualizationHelperNode::publishEarth()
+void VizHelperNode::publishEarth()
 {
     visualization_msgs::Marker m;
     m.header.frame_id = WORLD_FRAME;
@@ -253,14 +253,14 @@ void VisualizationHelperNode::publishEarth()
 }
 
 
-std::string VisualizationHelperNode::getSatelliteFrame(int index)
+std::string VizHelperNode::getSatelliteFrame(int index)
 {
     std::stringstream ss;
     ss << "sat_" << index;
     return ss.str();
 }
 
-Eigen::Quaterniond VisualizationHelperNode::rotateSatelliteFrame(const asterx1_node::SatPr &sat)
+Eigen::Quaterniond VizHelperNode::rotateSatelliteFrame(const asterx1_node::SatPr &sat)
 {
     Eigen::Quaterniond rotation;
 
@@ -294,14 +294,14 @@ Eigen::Quaterniond VisualizationHelperNode::rotateSatelliteFrame(const asterx1_n
     return rotation;
 }
 
-void VisualizationHelperNode::realFixCallback(const iri_asterx1_gps::NavSatFix_ecef::ConstPtr &msg)
+void VizHelperNode::realFixCallback(const iri_asterx1_gps::NavSatFix_ecef::ConstPtr &msg)
 {
     //std::cout << "real fix " << msg->x << ", " <<msg->y << ", " <<msg->z << ", " << "\n";
     publishRealFix(msg->x, msg->y, msg->z);
 }
 
 
-void VisualizationHelperNode::publishRealFix(double x, double y, double z)
+void VizHelperNode::publishRealFix(double x, double y, double z)
 {
     visualization_msgs::Marker m;
     m.header.frame_id = WORLD_FRAME;
@@ -343,13 +343,13 @@ void VisualizationHelperNode::publishRealFix(double x, double y, double z)
     markerPub.publish(m);
 }
 
-void VisualizationHelperNode::estFixCallback(const iri_asterx1_gps::NavSatFix_ecef::ConstPtr &msg)
+void VizHelperNode::estFixCallback(const iri_asterx1_gps::NavSatFix_ecef::ConstPtr &msg)
 {
     std::cout << "estimated fix " << msg->x << ", " <<msg->y << ", " <<msg->z << ", " << "\n";
     publishEstFix(msg->x, msg->y, msg->z);
 }
 
-void VisualizationHelperNode::publishEstFix(double x, double y, double z)
+void VizHelperNode::publishEstFix(double x, double y, double z)
 {
     visualization_msgs::Marker m;
     m.header.frame_id = WORLD_FRAME;

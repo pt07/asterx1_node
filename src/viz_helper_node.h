@@ -21,11 +21,11 @@
 //to manage quaternions
 #include <Eigen/Geometry>
 
-class VisualizationHelperNode
+class VizHelperNode
 {
 public:
-    VisualizationHelperNode();
-    ~VisualizationHelperNode();
+    VizHelperNode();
+    ~VizHelperNode();
 
     void pseudorangeCallback(const asterx1_node::SatPrArray::ConstPtr &msg);
     void realFixCallback(const iri_asterx1_gps::NavSatFix_ecef::ConstPtr &msg);

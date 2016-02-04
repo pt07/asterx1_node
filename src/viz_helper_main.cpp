@@ -10,7 +10,7 @@ int main(int argc, char **argv)
 {
     ros::init(argc, argv, "viz_helper_node");
 
-    VisualizationHelperNode vhNode;
+    VizHelperNode vhNode;
 
     ros::spin();
 

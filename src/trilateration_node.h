@@ -29,12 +29,14 @@ public:
     ~TrilaterationNode();
     void pseudorangeCallback(const asterx1_node::SatPrArray::ConstPtr &msg);
     void fixEcefCallback(const iri_asterx1_gps::NavSatFix_ecef::ConstPtr &msg);
+    void raimEcefCallback(const iri_asterx1_gps::NavSatFix_ecef::ConstPtr &msg);
 
     Point<double> ecefToLla(const Point<double> &ecef);
 
 protected:
     Trilateration tr;
     Point<double> lastFixECEF;
+    Point<double> lastRaimECEF;
 
     // ROS node handle
     ros::NodeHandle nh;
@@ -42,6 +44,7 @@ protected:
     // Subscriber (pseudoranges)
     ros::Subscriber pseudorangeSub;
     ros::Subscriber fixEcefSub; // fix ecef subscriber
+    ros::Subscriber raimEcefSub; // fix ecef subscriber
 
     // Publisher
     ros::Publisher estFixPub;

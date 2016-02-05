@@ -42,14 +42,13 @@ public:
     RawReceiverNode();
     ~RawReceiverNode();
 
-    asterx1_node::SatPr createSatMsg(short sat_id, ros::Time &timeROS, double pr, gpstk::Xvt &sat);
-    asterx1_node::SatPr createSatMsg2(short sat_id, ros::Time &time, double pr, double x, double y, double z, double vx, double vy, double vz);
+    asterx1_node::SatPr createSatMsg(unsigned short sat_id, ros::Time &time, double pr, double x, double y, double z, double vx, double vy, double vz);
 
     void obsCallbackRAIM(const iri_asterx1_gps::GPS_meas::ConstPtr& msg);
     void navCallback(const iri_asterx1_gps::GPS_raw_frames::ConstPtr& msg);
 
 protected:
-    gpstk::GPSWeekSecond getTimeGPS(unsigned int tow, unsigned short wnc);
+    gpstk::GPSWeekSecond getTimeGPS(const iri_asterx1_gps::GPS_time timestamp);
 
 
 protected:
@@ -64,10 +63,7 @@ protected:
 
     // Publishers
     ros::Publisher observationPub;
-
-
-    // GPStk stuff
-    //std::vector<gpstk::EngEphemeris> ephStore;
+    ros::Publisher raimFixPub;
 
     // GPStk stuff
     gpstk::GPSEphemerisStore bcestore; //object for storing ephemerides

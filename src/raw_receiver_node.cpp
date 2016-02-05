@@ -8,6 +8,7 @@ RawReceiverNode::RawReceiverNode() :
     navSub = nh.subscribe("/iri_asterx1_gps/gps_raw_data", 1000, &RawReceiverNode::navCallback, this);
 
     observationPub = nh.advertise<asterx1_node::SatPrArray>("/sat_pseudoranges", 5000);
+    raimFixPub = nh.advertise<iri_asterx1_gps::NavSatFix_ecef>("/raim_fix", 5000);
 
 
     //GPStk stuff
@@ -27,7 +28,7 @@ RawReceiverNode::~RawReceiverNode()
 
 void RawReceiverNode::obsCallbackRAIM(const iri_asterx1_gps::GPS_meas::ConstPtr& msg)
 {
-    gpstk::GPSWeekSecond time_gps = getTimeGPS(msg->time_stamp.tow, msg->time_stamp.wnc);
+    gpstk::GPSWeekSecond time_gps = getTimeGPS(msg->time_stamp);
     ros::Time time_ros = ros::Time::now();
 
     std::cout << "OBS callback: " << msg->type1_info.size() << " obs received at " << gpstk::CivilTime(time_gps) << std::endl;
@@ -50,15 +51,15 @@ void RawReceiverNode::obsCallbackRAIM(const iri_asterx1_gps::GPS_meas::ConstPtr&
 
     /************************************************************************
      *              DO the math to calculate the sat position               *
+     *                     and correct the pseudoranges                     *
      ************************************************************************/
-    int ret;
     gpstk::Matrix<double> calcPos;
 
-    ret = raimSolver.PrepareAutonomousSolution(getTimeGPS(msg->time_stamp.tow, msg->time_stamp.wnc),
+    int ret = raimSolver.PrepareAutonomousSolution(getTimeGPS(msg->time_stamp),
                                                prnVec,
                                                rangeVec,
                                                bcestore,
-                                               calcPos); //satellite positions at transmit time, and the corrected pseudorange
+                                               calcPos); //satellite positions at transmit time
     //Return values:  0 ok
     //               -4 ephemeris not found for all the satellites
 
@@ -87,13 +88,17 @@ void RawReceiverNode::obsCallbackRAIM(const iri_asterx1_gps::GPS_meas::ConstPtr&
         if(prnVec[i].id > 0)
         {
             std::cout << "\tPRN " << prnVec[i].id
-            << "\tnew pr = " << calcPos[i][3]
-            << "\tecef (" << calcPos[i][0] << ", " << calcPos[i][1] << ", " << calcPos[i][2] << ") "
-            << std::endl;
+                    << "\tnew pr = " << calcPos[i][3] // pseudorange corrected by raimsolver
+                    << "\tecef (" << calcPos[i][0] << ", " << calcPos[i][1] << ", " << calcPos[i][2] << ") "
+                    << std::endl;
 
-            gpstk::Triple vel = bcestore.getXvt(prnVec[i], getTimeGPS(msg->time_stamp.tow, msg->time_stamp.wnc)).getVel();
 
-            observation.measurements.push_back(createSatMsg2(prnVec[i].id, time_ros,/* rangeVec[i]/*TODO questo è il pseudorange corretto da raim solver */calcPos[i][3], calcPos[i][0], calcPos[i][1], calcPos[i][2], vel[0], vel[1], vel[2]));
+            gpstk::Triple vel = bcestore.getXvt(prnVec[i], getTimeGPS(msg->time_stamp)).getVel();
+
+            // Use pr corrected by RAIM
+            observation.measurements.push_back(createSatMsg(prnVec[i].id, time_ros, calcPos[i][3], calcPos[i][0], calcPos[i][1], calcPos[i][2], vel[0], vel[1], vel[2]));
+//            // Use pr as received
+//            observation.measurements.push_back(createSatMsg(prnVec[i].id, time_ros, rangeVec[i], calcPos[i][0], calcPos[i][1], calcPos[i][2], vel[0], vel[1], vel[2]));
         }
     }
 
@@ -108,16 +113,10 @@ void RawReceiverNode::obsCallbackRAIM(const iri_asterx1_gps::GPS_meas::ConstPtr&
      *                  ¡¡¡ funziona !!!                 *
      *****************************************************/
 
-
-
-
-
-
-
     try {
 
         raimSolver.RAIMCompute(
-                getTimeGPS(msg->time_stamp.tow, msg->time_stamp.wnc),
+                getTimeGPS(msg->time_stamp),
                 prnVec,
                 rangeVec,
                 bcestore,
@@ -127,10 +126,7 @@ void RawReceiverNode::obsCallbackRAIM(const iri_asterx1_gps::GPS_meas::ConstPtr&
         {
             // Vector "Solution" holds the coordinates, expressed in meters
             // in an Earth Centered, Earth Fixed (ECEF) reference frame.
-            std::cout << std::setprecision(12) << raimSolver.Solution[0] << " ";
-            std::cout << raimSolver.Solution[1] << " ";
-            std::cout << raimSolver.Solution[2];
-            std::cout << " --> LLR: ";
+            //std::cout << std::setprecision(12) << raimSolver.Solution[0] << " " << raimSolver.Solution[1] << " " << raimSolver.Solution[2];
 
             gpstk::Triple sol_xyz, sol_llr;
             sol_xyz[0] = raimSolver.Solution[0];
@@ -142,11 +138,17 @@ void RawReceiverNode::obsCallbackRAIM(const iri_asterx1_gps::GPS_meas::ConstPtr&
 
             gpstk::Position::convertCartesianToGeodetic(sol_xyz, sol_llr, AEarth, eccSquared);
 
-            std::cout << sol_llr[0] << " ";
-            std::cout << sol_llr[1] << " ";
-            std::cout << sol_llr[2];
-            std::cout << std::endl;
+            //std::cout << " --> LLR: " << sol_llr[0] << " " << sol_llr[1] << " " << sol_llr[2] << std::endl;
 
+
+            // Publishing the raim fix
+            iri_asterx1_gps::NavSatFix_ecef raimFixMsg;
+            //TODO fill up header etc
+            raimFixMsg.x = raimSolver.Solution[0];
+            raimFixMsg.y = raimSolver.Solution[1];
+            raimFixMsg.z = raimSolver.Solution[2];
+
+            raimFixPub.publish(raimFixMsg);
         }
         else
         {
@@ -176,23 +178,28 @@ void RawReceiverNode::navCallback(const iri_asterx1_gps::GPS_raw_frames::ConstPt
         sf3.push_back(msg->subframe3[i]);
     }
 
-    gpstk::EngEphemeris ee;
     try
     {
+        // Create ephemeris
+        gpstk::EngEphemeris ee;
         // Initialize the ephemeris through subframes
-        //    long int sf1_bits[10];
         ee.addSubframe(&sf1[0], msg->wn, msg->sat_id, msg->track_id);
         ee.addSubframe(&sf2[0], msg->wn, msg->sat_id, msg->track_id);
         ee.addSubframe(&sf3[0], msg->wn, msg->sat_id, msg->track_id);
 
         // Save the Ephemeris
         bcestore.addEphemeris(gpstk::RinexNavData(ee));
+
+        std::cout << "   \ttime " << gpstk::CivilTime(ee.getTransmitTime()) << std::endl;
+
+        // Print the ephemeris
+//        ee.dump();
     }
     catch (gpstk::InvalidParameter &e)
     {
         std::cerr << "InvalidParameter!\n" << e.what() << std::endl;
     }
-    catch(gpstk::Exception &e)
+    catch (gpstk::Exception &e)
     {
         std::cerr << e.what() << std::endl;
     }
@@ -200,38 +207,14 @@ void RawReceiverNode::navCallback(const iri_asterx1_gps::GPS_raw_frames::ConstPt
     {
         std::cerr << "Caught an unexpected exception." << std::endl;
     }
-
-
-    std::cout << "   \ttime " << gpstk::CivilTime(ee.getTransmitTime()) << std::endl;
-
-    // Print the ephemeris
-//    ee.dump();
 }
 
-gpstk::GPSWeekSecond RawReceiverNode::getTimeGPS(unsigned int tow, unsigned short wnc)
+gpstk::GPSWeekSecond RawReceiverNode::getTimeGPS(const iri_asterx1_gps::GPS_time timestamp)
 {
-    return gpstk::GPSWeekSecond(wnc, (double)tow/1000, gpstk::TimeSystem::GPS);
+    return gpstk::GPSWeekSecond(timestamp.wnc, (double)timestamp.tow/1000, gpstk::TimeSystem::GPS);
 }
 
-asterx1_node::SatPr RawReceiverNode::createSatMsg(short sat_id, ros::Time &timeROS, double pr, gpstk::Xvt &sat)
-{
-    asterx1_node::SatPr satPr;
-
-    satPr.sat_id = sat_id;
-    satPr.timestamp = timeROS;
-    satPr.pseudorange = pr;
-    satPr.x = sat.x[0];
-    satPr.y = sat.x[1];
-    satPr.z = sat.x[2];
-    satPr.v_x = sat.v[0];
-    satPr.v_y = sat.v[1];
-    satPr.v_z = sat.v[2];
-
-    return satPr;
-}
-
-
-asterx1_node::SatPr RawReceiverNode::createSatMsg2(short sat_id, ros::Time &time, double pr, double x, double y, double z, double vx, double vy, double vz)
+asterx1_node::SatPr RawReceiverNode::createSatMsg(unsigned short sat_id, ros::Time &time, double pr, double x, double y, double z, double vx, double vy, double vz)
 {
     asterx1_node::SatPr satPr;
 

@@ -21,6 +21,9 @@
 #include <Triple.hpp>
 #include "WGS84Ellipsoid.hpp"
 
+//To write file
+#include <iostream>
+#include <fstream>
 
 class TrilaterationNode
 {
@@ -31,7 +34,30 @@ public:
     void fixEcefCallback(const iri_asterx1_gps::NavSatFix_ecef::ConstPtr &msg);
     void raimEcefCallback(const iri_asterx1_gps::NavSatFix_ecef::ConstPtr &msg);
 
+    Point<double> ecefToLla(double x, double y, double z);
     Point<double> ecefToLla(const Point<double> &ecef);
+
+protected:
+    /*
+     * Just for debug purpose.
+     *
+     * It prints the solutions in some files,
+     * then they can be visualized through:
+     * http://www.gpsvisualizer.com/map_input?form=google
+     */
+    bool writeOnFile(std::string path, double x, double y, double z);
+    bool writeOnFile(std::string path, Point<double> p);
+
+
+    bool saveOnDisk = true;
+    const std::string PATH_REAL_POS = "/home/ptirindelli/bagfiles/output/real.txt";
+    const std::string PATH_EST_POS = "/home/ptirindelli/bagfiles/output/est.txt";
+    const std::string PATH_RAIM_POS = "/home/ptirindelli/bagfiles/output/raim.txt";
+
+    int counterReal = 0;
+    int counterEst = 0;
+    int counterRaim = 0;
+    const int SAMPLING_RATE = 1;
 
 protected:
     Trilateration tr;

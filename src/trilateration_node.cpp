@@ -186,7 +186,7 @@ bool TrilaterationNode::writeOnFile(std::string path, Point<double> p)
 bool TrilaterationNode::writeOnFile(std::string path, double x, double y, double z)
 {
     Point<double> p(x, y, z);
-    if(abs(x)+abs(y)+abs(z) > 5000)
+    if(abs(x)+abs(y)+abs(z) > 5000.0)
     {
         std::cout << "-_çḉ34235!·$$%&/&%;  " << p.toString() << " non stampato\n";
     }
@@ -196,7 +196,8 @@ bool TrilaterationNode::writeOnFile(std::string path, double x, double y, double
     if (myfile.is_open())
     {
         std::cout << "WRITING " << p.toString() << "\n";
-        //TODO save latitude,longitude,elevation
+        // latitude,longitude,elevation
+        myfile << std::setprecision(12);
         myfile << x << "," << y << "," << z << "\n";
         myfile.close();
         return true;

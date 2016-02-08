@@ -1,0 +1,26 @@
+<launch>
+
+  <node pkg="asterx1_node"
+        type="raw_receiver_node"
+        name="raw_receiver_node"/>
+
+  <node pkg="asterx1_node"
+        type="trilat_node"
+        name="trilat_node"/>
+
+  <node name="rviz"
+		pkg="rviz"
+		type="rviz"/>
+
+  <node pkg="asterx1_node"
+        type="viz_helper"
+        name="viz_helper"/>
+
+  <node pkg="rosbag"
+        type="play"
+        name="player" 
+        output="screen"
+        args="/home/ptirindelli/bagfiles/parking_quimicas_2016-02-05-12-27-57.bag -r 10 -l"/>
+
+</launch>
+

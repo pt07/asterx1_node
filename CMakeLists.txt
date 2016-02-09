@@ -178,6 +178,7 @@ ENDIF(Ceres_FOUND)
 ## cpp executable
 add_executable(raw_receiver_node ${SRCS_RAW_REC} )
 target_link_libraries(raw_receiver_node ${catkin_LIBRARIES} gpstk)
+add_dependencies(raw_receiver_node iri_asterx1_gps_generate_messages_cpp)
 
 add_executable(viz_helper ${SRCS_VIZ_HELP} )
 target_link_libraries(viz_helper ${catkin_LIBRARIES})
@@ -186,4 +187,5 @@ target_link_libraries(viz_helper ${catkin_LIBRARIES})
 IF(Ceres_FOUND)
     add_executable(trilat_node ${SRCS_TRILAT_NODE} ${SRCS_TR_LIB})
     target_link_libraries(trilat_node ${catkin_LIBRARIES} ${CERES_LIBRARIES} gpstk)
+	add_dependencies(raw_receiver_node asterx1_node_generate_messages_cpp)
 ENDIF(Ceres_FOUND)

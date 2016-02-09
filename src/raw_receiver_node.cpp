@@ -4,10 +4,10 @@
 RawReceiverNode::RawReceiverNode() :
         nh(ros::this_node::getName())
 {
-    obsSub = nh.subscribe("/iri_asterx1_gps/gps_meas", 1000, &RawReceiverNode::obsCallbackRAIM, this);
+    obsSub = nh.subscribe("/iri_asterx1_gps/gps_meas", 1000, &RawReceiverNode::obsCallback, this);
     navSub = nh.subscribe("/iri_asterx1_gps/gps_raw_data", 1000, &RawReceiverNode::navCallback, this);
 
-    observationPub = nh.advertise<asterx1_node::SatPrArray>("/sat_pseudoranges", 5000);
+    observationPub = nh.advertise<iri_common_drivers_msgs::SatellitePseudorangeArray>("/sat_pseudoranges", 5000);
     raimFixPub = nh.advertise<iri_asterx1_gps::NavSatFix_ecef>("/raim_fix", 5000);
 
 
@@ -26,7 +26,7 @@ RawReceiverNode::~RawReceiverNode()
 
 
 
-void RawReceiverNode::obsCallbackRAIM(const iri_asterx1_gps::GPS_meas::ConstPtr& msg)
+void RawReceiverNode::obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr &msg)
 {
     gpstk::GPSWeekSecond time_gps = getTimeGPS(msg->time_stamp);
     ros::Time time_ros = ros::Time::now();
@@ -79,7 +79,7 @@ void RawReceiverNode::obsCallbackRAIM(const iri_asterx1_gps::GPS_meas::ConstPtr&
     std::cout << "\t% of good entries = " << goodEntries << "/" << prnVec.size() << "\n";
 
     // Compose the message
-    asterx1_node::SatPrArray observation;
+    iri_common_drivers_msgs::SatellitePseudorangeArray observation;
 
     observation.timestamp = time_ros;
 
@@ -214,9 +214,9 @@ gpstk::GPSWeekSecond RawReceiverNode::getTimeGPS(const iri_asterx1_gps::GPS_time
     return gpstk::GPSWeekSecond(timestamp.wnc, (double)timestamp.tow/1000, gpstk::TimeSystem::GPS);
 }
 
-asterx1_node::SatPr RawReceiverNode::createSatMsg(unsigned short sat_id, ros::Time &time, double pr, double x, double y, double z, double vx, double vy, double vz)
+iri_common_drivers_msgs::SatellitePseudorange RawReceiverNode::createSatMsg(unsigned short sat_id, ros::Time &time, double pr, double x, double y, double z, double vx, double vy, double vz)
 {
-    asterx1_node::SatPr satPr;
+    iri_common_drivers_msgs::SatellitePseudorange satPr;
 
     satPr.sat_id = sat_id;
     satPr.timestamp = time;

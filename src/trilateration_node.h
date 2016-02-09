@@ -8,8 +8,7 @@
 #include <ros/ros.h>
 
 // ROS messages
-#include "asterx1_node/SatPr.h"
-#include "asterx1_node/SatPrArray.h"
+#include "iri_common_drivers_msgs/SatellitePseudorangeArray.h"
 #include "iri_asterx1_gps/NavSatFix_ecef.h"
 #include "sensor_msgs/NavSatFix.h"
 
@@ -30,7 +29,7 @@ class TrilaterationNode
 public:
     TrilaterationNode();
     ~TrilaterationNode();
-    void pseudorangeCallback(const asterx1_node::SatPrArray::ConstPtr &msg);
+    void pseudorangeCallback(const iri_common_drivers_msgs::SatellitePseudorangeArray::ConstPtr &msg);
     void fixEcefCallback(const iri_asterx1_gps::NavSatFix_ecef::ConstPtr &msg);
     void raimEcefCallback(const iri_asterx1_gps::NavSatFix_ecef::ConstPtr &msg);
 

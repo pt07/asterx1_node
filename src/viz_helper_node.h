@@ -8,8 +8,7 @@
 #include <ros/ros.h>
 
 // Messages
-#include "asterx1_node/SatPr.h"
-#include "asterx1_node/SatPrArray.h"
+#include "iri_common_drivers_msgs/SatellitePseudorangeArray.h"
 
 #include "iri_asterx1_gps/NavSatFix_ecef.h"
 
@@ -27,19 +26,19 @@ public:
     VizHelperNode();
     ~VizHelperNode();
 
-    void pseudorangeCallback(const asterx1_node::SatPrArray::ConstPtr &msg);
+    void pseudorangeCallback(const iri_common_drivers_msgs::SatellitePseudorangeArray::ConstPtr &msg);
     void realFixCallback(const iri_asterx1_gps::NavSatFix_ecef::ConstPtr &msg);
     void estFixCallback(const iri_asterx1_gps::NavSatFix_ecef::ConstPtr &msg);
 
 
-    Eigen::Quaterniond rotateSatelliteFrame(const asterx1_node::SatPr &sat);
+    Eigen::Quaterniond rotateSatelliteFrame(const iri_common_drivers_msgs::SatellitePseudorange &sat);
 
 
 protected:
-    void publishSat(const asterx1_node::SatPr &sat);
-    void publishSatVelocity(const asterx1_node::SatPr &sat);
-    void publishOdometry(const asterx1_node::SatPr &sat, const Eigen::Quaterniond &rotation);
-    void publishSatSphere(const asterx1_node::SatPr &sat);
+    void publishSat(const iri_common_drivers_msgs::SatellitePseudorange &sat);
+    void publishSatVelocity(const iri_common_drivers_msgs::SatellitePseudorange &sat);
+    void publishOdometry(const iri_common_drivers_msgs::SatellitePseudorange &sat, const Eigen::Quaterniond &rotation);
+    void publishSatSphere(const iri_common_drivers_msgs::SatellitePseudorange &sat);
     void publishRealFix(double x, double y, double z);
     void publishEstFix(double x, double y, double z);
 

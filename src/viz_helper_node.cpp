@@ -22,13 +22,13 @@ VizHelperNode::VizHelperNode() :
 
 VizHelperNode::~VizHelperNode(){ }
 
-void VizHelperNode::pseudorangeCallback(const asterx1_node::SatPrArray::ConstPtr &msg)
+void VizHelperNode::pseudorangeCallback(const iri_common_drivers_msgs::SatellitePseudorangeArray::ConstPtr &msg)
 {
     std::cout << "Visualizing " << msg->measurements.size() << " sats at " << msg->timestamp << "\n";
 
     for (int i = 0; i < msg->measurements.size(); ++i)
     {
-        const asterx1_node::SatPr sat = msg->measurements[i];
+        const iri_common_drivers_msgs::SatellitePseudorange sat = msg->measurements[i];
 
         publishSat(sat);
 
@@ -39,7 +39,7 @@ void VizHelperNode::pseudorangeCallback(const asterx1_node::SatPrArray::ConstPtr
 }
 
 
-void VizHelperNode::publishSat(const asterx1_node::SatPr &sat)
+void VizHelperNode::publishSat(const iri_common_drivers_msgs::SatellitePseudorange &sat)
 {
     visualization_msgs::Marker m;
     m.header.frame_id = WORLD_FRAME;
@@ -94,7 +94,7 @@ void VizHelperNode::publishSat(const asterx1_node::SatPr &sat)
 
 
 
-void VizHelperNode::publishOdometry(const asterx1_node::SatPr &sat, const Eigen::Quaterniond &rotation)
+void VizHelperNode::publishOdometry(const iri_common_drivers_msgs::SatellitePseudorange &sat, const Eigen::Quaterniond &rotation)
 {
     /// publish the odometry message over ROS
     nav_msgs::Odometry odom;
@@ -128,7 +128,7 @@ void VizHelperNode::publishOdometry(const asterx1_node::SatPr &sat, const Eigen:
 }
 
 
-void VizHelperNode::publishSatVelocity(const asterx1_node::SatPr &sat)
+void VizHelperNode::publishSatVelocity(const iri_common_drivers_msgs::SatellitePseudorange &sat)
 {
     visualization_msgs::Marker m;
     m.header.frame_id = getSatelliteFrame(sat.sat_id);
@@ -165,7 +165,7 @@ void VizHelperNode::publishSatVelocity(const asterx1_node::SatPr &sat)
 }
 
 
-void VizHelperNode::publishSatSphere(const asterx1_node::SatPr &sat)
+void VizHelperNode::publishSatSphere(const iri_common_drivers_msgs::SatellitePseudorange &sat)
 {
     //std::cout << "publishing sat sphere of radius " << sat.pseudorange << "\n";
 
@@ -260,7 +260,7 @@ std::string VizHelperNode::getSatelliteFrame(int index)
     return ss.str();
 }
 
-Eigen::Quaterniond VizHelperNode::rotateSatelliteFrame(const asterx1_node::SatPr &sat)
+Eigen::Quaterniond VizHelperNode::rotateSatelliteFrame(const iri_common_drivers_msgs::SatellitePseudorange &sat)
 {
     Eigen::Quaterniond rotation;
 

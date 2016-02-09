@@ -13,9 +13,6 @@
   <build_depend>iri_asterx1_gps</build_depend>
   <run_depend>iri_asterx1_gps</run_depend>
 
-  <build_depend>message_generation</build_depend>
-  <run_depend>message_runtime</run_depend>
-
   <build_depend>ros_cpp</build_depend>
   <run_depend>ros_cpp</run_depend>
 

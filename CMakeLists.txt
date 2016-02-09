@@ -18,7 +18,6 @@ endif()
 find_package(catkin REQUIRED COMPONENTS
         roscpp
         std_msgs
-        message_generation
         sensor_msgs
         visualization_msgs
         tf
@@ -66,11 +65,11 @@ FIND_LIBRARY(gpstk_LIBRARY REQUIRED
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-add_message_files(
-  FILES
-  SatPr.msg
-  SatPrArray.msg
-)
+#add_message_files(
+#  FILES
+#  SatPr.msg
+#  SatPrArray.msg
+#)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -87,10 +86,10 @@ add_message_files(
 # )
 
 ## Generate added messages and services with any dependencies listed here
-generate_messages(
-    DEPENDENCIES
-    std_msgs  # Or other packages containing msgs
-)
+#generate_messages(
+#    DEPENDENCIES
+#    std_msgs  # Or other packages containing msgs
+#)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -121,9 +120,9 @@ generate_messages(
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
-catkin_package(
-    CATKIN_DEPENDS message_runtime
-)
+#catkin_package(
+#    CATKIN_DEPENDS message_runtime
+#)
 
 catkin_package(
 #  INCLUDE_DIRS include
@@ -178,14 +177,15 @@ ENDIF(Ceres_FOUND)
 ## cpp executable
 add_executable(raw_receiver_node ${SRCS_RAW_REC} )
 target_link_libraries(raw_receiver_node ${catkin_LIBRARIES} gpstk)
-add_dependencies(raw_receiver_node iri_asterx1_gps_generate_messages_cpp)
+add_dependencies(raw_receiver_node iri_common_drivers_msgs_generate_messages_cpp)
 
 add_executable(viz_helper ${SRCS_VIZ_HELP} )
 target_link_libraries(viz_helper ${catkin_LIBRARIES})
+add_dependencies(raw_receiver_node iri_common_drivers_msgs_generate_messages_cpp)
 
 
 IF(Ceres_FOUND)
     add_executable(trilat_node ${SRCS_TRILAT_NODE} ${SRCS_TR_LIB})
     target_link_libraries(trilat_node ${catkin_LIBRARIES} ${CERES_LIBRARIES} gpstk)
-	add_dependencies(raw_receiver_node asterx1_node_generate_messages_cpp)
+    add_dependencies(raw_receiver_node iri_common_drivers_msgs_generate_messages_cpp)
 ENDIF(Ceres_FOUND)

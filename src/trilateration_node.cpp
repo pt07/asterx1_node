@@ -26,7 +26,7 @@ TrilaterationNode::TrilaterationNode():
 TrilaterationNode::~TrilaterationNode() { }
 
 
-void TrilaterationNode::pseudorangeCallback(const asterx1_node::SatPrArray::ConstPtr &msg)
+void TrilaterationNode::pseudorangeCallback(const iri_common_drivers_msgs::SatellitePseudorangeArray::ConstPtr &msg)
 {
     std::cout << "Received " << msg->measurements.size() << " sat obs at " << msg->timestamp << "\n";
 
@@ -41,7 +41,7 @@ void TrilaterationNode::pseudorangeCallback(const asterx1_node::SatPrArray::Cons
 
     for (int i = 0; i < msg->measurements.size(); ++i)
     {
-        const asterx1_node::SatPr sat = msg->measurements[i];
+        const iri_common_drivers_msgs::SatellitePseudorange sat = msg->measurements[i];
 
         SatelliteMeasurement m = {
                 Point<double>(sat.x, sat.y, sat.z),

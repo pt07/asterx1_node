@@ -41,7 +41,7 @@ public:
     RawReceiverNode();
     ~RawReceiverNode();
 
-    iri_common_drivers_msgs::SatellitePseudorange createSatMsg(unsigned short sat_id, ros::Time &time, double pr, double x, double y, double z, double vx, double vy, double vz);
+    iri_common_drivers_msgs::SatellitePseudorange createSatMsg(unsigned short sat_id, double pr, double x, double y, double z, double vx, double vy, double vz);
 
     void obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr &msg);
     void navCallback(const iri_asterx1_gps::GPS_raw_frames::ConstPtr& msg);

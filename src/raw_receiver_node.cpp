@@ -81,7 +81,10 @@ void RawReceiverNode::obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr &msg
     // Compose the message
     iri_common_drivers_msgs::SatellitePseudorangeArray observation;
 
-    observation.timestamp = time_ros;
+    observation.time_ros = time_ros;
+    observation.time_gps_wnc = msg->time_stamp.wnc;
+    observation.time_gps_tow = msg->time_stamp.tow;
+
 
     for (size_t i = 0; i < prnVec.size(); ++i)
     {
@@ -96,7 +99,7 @@ void RawReceiverNode::obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr &msg
             gpstk::Triple vel = bcestore.getXvt(prnVec[i], getTimeGPS(msg->time_stamp)).getVel();
 
             // Use pr corrected by RAIM
-            observation.measurements.push_back(createSatMsg(prnVec[i].id, time_ros, calcPos[i][3], calcPos[i][0], calcPos[i][1], calcPos[i][2], vel[0], vel[1], vel[2]));
+            observation.measurements.push_back(createSatMsg(prnVec[i].id, calcPos[i][3], calcPos[i][0], calcPos[i][1], calcPos[i][2], vel[0], vel[1], vel[2]));
 //            // Use pr as received
 //            observation.measurements.push_back(createSatMsg(prnVec[i].id, time_ros, rangeVec[i], calcPos[i][0], calcPos[i][1], calcPos[i][2], vel[0], vel[1], vel[2]));
         }
@@ -214,12 +217,11 @@ gpstk::GPSWeekSecond RawReceiverNode::getTimeGPS(const iri_asterx1_gps::GPS_time
     return gpstk::GPSWeekSecond(timestamp.wnc, (double)timestamp.tow/1000, gpstk::TimeSystem::GPS);
 }
 
-iri_common_drivers_msgs::SatellitePseudorange RawReceiverNode::createSatMsg(unsigned short sat_id, ros::Time &time, double pr, double x, double y, double z, double vx, double vy, double vz)
+iri_common_drivers_msgs::SatellitePseudorange RawReceiverNode::createSatMsg(unsigned short sat_id, double pr, double x, double y, double z, double vx, double vy, double vz)
 {
     iri_common_drivers_msgs::SatellitePseudorange satPr;
 
     satPr.sat_id = sat_id;
-    satPr.timestamp = time;
     satPr.pseudorange = pr;
     satPr.x = x;
     satPr.y = y;

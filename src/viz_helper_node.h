@@ -31,14 +31,14 @@ public:
     void estFixCallback(const iri_asterx1_gps::NavSatFix_ecef::ConstPtr &msg);
 
 
-    Eigen::Quaterniond rotateSatelliteFrame(const iri_common_drivers_msgs::SatellitePseudorange &sat);
+    Eigen::Quaterniond rotateSatelliteFrame(const iri_common_drivers_msgs::SatellitePseudorange &sat, ros::Time time_ros);
 
 
 protected:
-    void publishSat(const iri_common_drivers_msgs::SatellitePseudorange &sat);
-    void publishSatVelocity(const iri_common_drivers_msgs::SatellitePseudorange &sat);
-    void publishOdometry(const iri_common_drivers_msgs::SatellitePseudorange &sat, const Eigen::Quaterniond &rotation);
-    void publishSatSphere(const iri_common_drivers_msgs::SatellitePseudorange &sat);
+    void publishSat(const iri_common_drivers_msgs::SatellitePseudorange &sat, ros::Time time_ros);
+    void publishSatVelocity(const iri_common_drivers_msgs::SatellitePseudorange &sat, ros::Time time_ros);
+    void publishOdometry(const iri_common_drivers_msgs::SatellitePseudorange &sat, const Eigen::Quaterniond &rotation, ros::Time time_ros);
+    void publishSatSphere(const iri_common_drivers_msgs::SatellitePseudorange &sat, ros::Time time_ros);
     void publishRealFix(double x, double y, double z);
     void publishEstFix(double x, double y, double z);
 

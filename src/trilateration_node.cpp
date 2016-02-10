@@ -28,7 +28,7 @@ TrilaterationNode::~TrilaterationNode() { }
 
 void TrilaterationNode::pseudorangeCallback(const iri_common_drivers_msgs::SatellitePseudorangeArray::ConstPtr &msg)
 {
-    std::cout << "Received " << msg->measurements.size() << " sat obs at " << msg->timestamp << "\n";
+    std::cout << "Received " << msg->measurements.size() << " sat obs at " << msg->time_ros << "\n";
 
     if(msg->measurements.size() < 4)
     {

@@ -24,13 +24,13 @@ VizHelperNode::~VizHelperNode(){ }
 
 void VizHelperNode::pseudorangeCallback(const iri_common_drivers_msgs::SatellitePseudorangeArray::ConstPtr &msg)
 {
-    std::cout << "Visualizing " << msg->measurements.size() << " sats at " << msg->timestamp << "\n";
+    std::cout << "Visualizing " << msg->measurements.size() << " sats at " << msg->time_ros << "\n";
 
     for (int i = 0; i < msg->measurements.size(); ++i)
     {
         const iri_common_drivers_msgs::SatellitePseudorange sat = msg->measurements[i];
 
-        publishSat(sat);
+        publishSat(sat, msg->time_ros);
 
     }
 
@@ -39,11 +39,11 @@ void VizHelperNode::pseudorangeCallback(const iri_common_drivers_msgs::Satellite
 }
 
 
-void VizHelperNode::publishSat(const iri_common_drivers_msgs::SatellitePseudorange &sat)
+void VizHelperNode::publishSat(const iri_common_drivers_msgs::SatellitePseudorange &sat, ros::Time time_ros)
 {
     visualization_msgs::Marker m;
     m.header.frame_id = WORLD_FRAME;
-    m.header.stamp = sat.timestamp;
+    m.header.stamp = time_ros;
 
     m.ns = "sats";
     m.id = sat.sat_id;
@@ -73,32 +73,32 @@ void VizHelperNode::publishSat(const iri_common_drivers_msgs::SatellitePseudoran
     markerPub.publish(m);
 
 
-    publishSatVelocity(sat);    // publish velocity
+    publishSatVelocity(sat, time_ros);    // publish velocity
     // calculate rotation quaternion.
     // rotate (vedi cosa va la funzione rotateSatelliteFrame)
-    Eigen::Quaterniond rotation = rotateSatelliteFrame(sat);
+    Eigen::Quaterniond rotation = rotateSatelliteFrame(sat, time_ros);
 
 
 
     // publish odometry
-    publishOdometry(sat, rotation);
+    publishOdometry(sat, rotation, time_ros);
 
 
     // publish earth vector
     //TODO
 
     // publish sat sphere
-    publishSatSphere(sat);
+    publishSatSphere(sat, time_ros);
 
 }
 
 
 
-void VizHelperNode::publishOdometry(const iri_common_drivers_msgs::SatellitePseudorange &sat, const Eigen::Quaterniond &rotation)
+void VizHelperNode::publishOdometry(const iri_common_drivers_msgs::SatellitePseudorange &sat, const Eigen::Quaterniond &rotation, ros::Time time_ros)
 {
     /// publish the odometry message over ROS
     nav_msgs::Odometry odom;
-    odom.header.stamp = sat.timestamp;
+    odom.header.stamp = time_ros;
     odom.header.frame_id = WORLD_FRAME;
 
     //set the position
@@ -128,11 +128,11 @@ void VizHelperNode::publishOdometry(const iri_common_drivers_msgs::SatellitePseu
 }
 
 
-void VizHelperNode::publishSatVelocity(const iri_common_drivers_msgs::SatellitePseudorange &sat)
+void VizHelperNode::publishSatVelocity(const iri_common_drivers_msgs::SatellitePseudorange &sat, ros::Time time_ros)
 {
     visualization_msgs::Marker m;
     m.header.frame_id = getSatelliteFrame(sat.sat_id);
-    m.header.stamp = sat.timestamp;
+    m.header.stamp = time_ros;
 
     m.ns = "velocity";
     m.id = sat.sat_id;
@@ -165,13 +165,13 @@ void VizHelperNode::publishSatVelocity(const iri_common_drivers_msgs::SatelliteP
 }
 
 
-void VizHelperNode::publishSatSphere(const iri_common_drivers_msgs::SatellitePseudorange &sat)
+void VizHelperNode::publishSatSphere(const iri_common_drivers_msgs::SatellitePseudorange &sat, ros::Time time_ros)
 {
     //std::cout << "publishing sat sphere of radius " << sat.pseudorange << "\n";
 
     visualization_msgs::Marker m;
     m.header.frame_id = WORLD_FRAME;
-    m.header.stamp = ros::Time::now();
+    m.header.stamp = time_ros;
 
     // Set the namespace and id for this marker.  This serves to create a unique ID
     // Any marker sent with the same namespace and id will overwrite the old one
@@ -260,7 +260,7 @@ std::string VizHelperNode::getSatelliteFrame(int index)
     return ss.str();
 }
 
-Eigen::Quaterniond VizHelperNode::rotateSatelliteFrame(const iri_common_drivers_msgs::SatellitePseudorange &sat)
+Eigen::Quaterniond VizHelperNode::rotateSatelliteFrame(const iri_common_drivers_msgs::SatellitePseudorange &sat, ros::Time time_ros)
 {
     Eigen::Quaterniond rotation;
 
@@ -279,7 +279,7 @@ Eigen::Quaterniond VizHelperNode::rotateSatelliteFrame(const iri_common_drivers_
 
     // Publish the transform over tf
     geometry_msgs::TransformStamped odom_trans;
-    odom_trans.header.stamp = sat.timestamp;
+    odom_trans.header.stamp = time_ros;
     odom_trans.header.frame_id = WORLD_FRAME;				//frame padre
     odom_trans.child_frame_id = getSatelliteFrame(sat.sat_id);	//frame figlio (che sto creando ora)
     odom_trans.transform.translation.x = sat.x * scale;//traslazione dell'origine

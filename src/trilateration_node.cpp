@@ -11,6 +11,7 @@ TrilaterationNode::TrilaterationNode():
     pseudorangeSub = nh.subscribe("/sat_pseudoranges", 1000, &TrilaterationNode::pseudorangeCallback, this);
     fixEcefSub = nh.subscribe("/iri_asterx1_gps/gps_ecef", 1000, &TrilaterationNode::fixEcefCallback, this);
     raimEcefSub = nh.subscribe("/raim_fix", 1000, &TrilaterationNode::raimEcefCallback, this);
+    wolfEcefSub = nh.subscribe("/wolf_fix", 1000, &TrilaterationNode::wolfEcefCallback, this);
 
     //Publisher
     estFixPub = nh.advertise<iri_asterx1_gps::NavSatFix_ecef>("/est_fix", 5000);
@@ -20,6 +21,8 @@ TrilaterationNode::TrilaterationNode():
     std::ofstream myfile (PATH_EST_POS); myfile<<"latitude,longitude,altitude\n";  myfile.close();
     myfile.open(PATH_RAIM_POS);  myfile<<"latitude,longitude,altitude\n";   myfile.close();
     myfile.open(PATH_REAL_POS);  myfile<<"latitude,longitude,altitude\n";   myfile.close();
+    myfile.open(PATH_WOLF_POS);  myfile<<"latitude,longitude,altitude\n";   myfile.close();
+
 }
 
 
@@ -174,6 +177,25 @@ void TrilaterationNode::raimEcefCallback(const iri_asterx1_gps::NavSatFix_ecef::
             counterRaim = 0;
         }
         counterRaim++;
+    }
+}
+
+
+void TrilaterationNode::wolfEcefCallback(const iri_asterx1_gps::NavSatFix_ecef::ConstPtr &msg)
+{
+    //std::cout << "%%%%  RAIM ecef = (" << msg->x << ", " << msg->y << ", " << msg->z << ")\n";
+    lastWolfECEF.setX(msg->x);
+    lastWolfECEF.setY(msg->y);
+    lastWolfECEF.setZ(msg->z);
+
+    if(saveOnDisk)
+    {
+        if(counterRaim==SAMPLING_RATE)
+        {
+            writeOnFile(PATH_WOLF_POS, ecefToLla(lastWolfECEF));
+            counterWolf = 0;
+        }
+        counterWolf++;
     }
 }
 

@@ -23,7 +23,7 @@
 #include "iri_asterx1_gps/GPS_meas.h"
 #include "iri_asterx1_gps/GPS_raw_frames.h"
 #include "iri_asterx1_gps/NavSatFix_ecef.h"
-#include "sensor_msgs/NavSatFix.h"
+//#include "sensor_msgs/NavSatFix.h"
 
 #include "iri_common_drivers_msgs/SatellitePseudorangeArray.h"
 

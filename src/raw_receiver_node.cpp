@@ -90,7 +90,7 @@ void RawReceiverNode::obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr &msg
     {
         if(prnVec[i].id > 0)
         {
-            std::cout << "\tPRN " << prnVec[i].id
+            std::cout << std::setprecision(12) << "\tPRN " << prnVec[i].id
                     << "\tnew pr = " << calcPos[i][3] // pseudorange corrected by raimsolver
                     << "\tecef (" << calcPos[i][0] << ", " << calcPos[i][1] << ", " << calcPos[i][2] << ") "
                     << std::endl;

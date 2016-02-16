@@ -9,7 +9,7 @@
 
 // ROS messages
 #include "iri_common_drivers_msgs/SatellitePseudorangeArray.h"
-#include "iri_asterx1_gps/NavSatFix_ecef.h"
+#include "iri_common_drivers_msgs/NavSatFix_ecef.h"
 #include "sensor_msgs/NavSatFix.h"
 
 //TODO è meglio installare la libreria e poi fare un include normale?
@@ -30,9 +30,9 @@ public:
     TrilaterationNode();
     ~TrilaterationNode();
     void pseudorangeCallback(const iri_common_drivers_msgs::SatellitePseudorangeArray::ConstPtr &msg);
-    void fixEcefCallback(const iri_asterx1_gps::NavSatFix_ecef::ConstPtr &msg);
-    void raimEcefCallback(const iri_asterx1_gps::NavSatFix_ecef::ConstPtr &msg);
-    void wolfEcefCallback(const iri_asterx1_gps::NavSatFix_ecef::ConstPtr &msg);
+    void fixEcefCallback(const iri_common_drivers_msgs::NavSatFix_ecef::ConstPtr &msg);
+    void raimEcefCallback(const iri_common_drivers_msgs::NavSatFix_ecef::ConstPtr &msg);
+    void wolfEcefCallback(const iri_common_drivers_msgs::NavSatFix_ecef::ConstPtr &msg);
 
     Point<double> ecefToLla(double x, double y, double z);
     Point<double> ecefToLla(const Point<double> &ecef);

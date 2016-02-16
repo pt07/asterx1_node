@@ -20,9 +20,9 @@
 #include <ros/ros.h>
 
 // ROS messages
-#include "iri_asterx1_gps/GPS_meas.h"
-#include "iri_asterx1_gps/GPS_raw_frames.h"
-#include "iri_asterx1_gps/NavSatFix_ecef.h"
+#include "iri_common_drivers_msgs/GPS_meas.h"
+#include "iri_common_drivers_msgs/GPS_raw_frames.h"
+#include "iri_common_drivers_msgs/NavSatFix_ecef.h"
 //#include "sensor_msgs/NavSatFix.h"
 
 #include "iri_common_drivers_msgs/SatellitePseudorangeArray.h"
@@ -43,11 +43,11 @@ public:
 
     iri_common_drivers_msgs::SatellitePseudorange createSatMsg(unsigned short sat_id, double pr, double x, double y, double z, double vx, double vy, double vz);
 
-    void obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr &msg);
-    void navCallback(const iri_asterx1_gps::GPS_raw_frames::ConstPtr& msg);
+    void obsCallback(const iri_common_drivers_msgs::GPS_meas::ConstPtr &msg);
+    void navCallback(const iri_common_drivers_msgs::GPS_raw_frames::ConstPtr& msg);
 
 protected:
-    gpstk::GPSWeekSecond getTimeGPS(const iri_asterx1_gps::GPS_time timestamp);
+    gpstk::GPSWeekSecond getTimeGPS(const iri_common_drivers_msgs::GPS_time timestamp);
 
 
 protected:

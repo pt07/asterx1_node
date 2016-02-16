@@ -178,17 +178,14 @@ ENDIF(Ceres_FOUND)
 add_executable(raw_receiver_node ${SRCS_RAW_REC} )
 target_link_libraries(raw_receiver_node ${catkin_LIBRARIES} gpstk)
 add_dependencies(raw_receiver_node iri_common_drivers_msgs_generate_messages_cpp)
-add_dependencies(raw_receiver_node iri_asterx1_gps_generate_messages_cpp)
 
 add_executable(viz_helper ${SRCS_VIZ_HELP} )
 target_link_libraries(viz_helper ${catkin_LIBRARIES})
 add_dependencies(viz_helper iri_common_drivers_msgs_generate_messages_cpp)
-add_dependencies(viz_helper iri_asterx1_gps_generate_messages_cpp)
 
 
 IF(Ceres_FOUND)
     add_executable(trilat_node ${SRCS_TRILAT_NODE} ${SRCS_TR_LIB})
     target_link_libraries(trilat_node ${catkin_LIBRARIES} ${CERES_LIBRARIES} gpstk)
     add_dependencies(trilat_node iri_common_drivers_msgs_generate_messages_cpp)
-    add_dependencies(viz_helper iri_asterx1_gps_generate_messages_cpp)
 ENDIF(Ceres_FOUND)

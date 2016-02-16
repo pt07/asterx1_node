@@ -9,8 +9,7 @@
 
 // Messages
 #include "iri_common_drivers_msgs/SatellitePseudorangeArray.h"
-
-#include "iri_asterx1_gps/NavSatFix_ecef.h"
+#include "iri_common_drivers_msgs/NavSatFix_ecef.h"
 
 #include <visualization_msgs/Marker.h>
 
@@ -27,8 +26,8 @@ public:
     ~VizHelperNode();
 
     void pseudorangeCallback(const iri_common_drivers_msgs::SatellitePseudorangeArray::ConstPtr &msg);
-    void realFixCallback(const iri_asterx1_gps::NavSatFix_ecef::ConstPtr &msg);
-    void estFixCallback(const iri_asterx1_gps::NavSatFix_ecef::ConstPtr &msg);
+    void realFixCallback(const iri_common_drivers_msgs::NavSatFix_ecef::ConstPtr &msg);
+    void estFixCallback(const iri_common_drivers_msgs::NavSatFix_ecef::ConstPtr &msg);
 
 
     Eigen::Quaterniond rotateSatelliteFrame(const iri_common_drivers_msgs::SatellitePseudorange &sat, ros::Time time_ros);

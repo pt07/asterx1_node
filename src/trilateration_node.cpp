@@ -14,7 +14,7 @@ TrilaterationNode::TrilaterationNode():
     wolfEcefSub = nh.subscribe("/wolf_fix", 1000, &TrilaterationNode::wolfEcefCallback, this);
 
     //Publisher
-    estFixPub = nh.advertise<iri_asterx1_gps::NavSatFix_ecef>("/est_fix", 5000);
+    estFixPub = nh.advertise<iri_common_drivers_msgs::NavSatFix_ecef>("/est_fix", 5000);
 
 
     //To clean the files
@@ -111,7 +111,7 @@ void TrilaterationNode::pseudorangeCallback(const iri_common_drivers_msgs::Satel
 
     // publish result
 
-    iri_asterx1_gps::NavSatFix_ecef estFixMsg;
+    iri_common_drivers_msgs::NavSatFix_ecef estFixMsg;
     //TODO fill up header etc
     estFixMsg.x = estRec.pos.getX();
     estFixMsg.y = estRec.pos.getY();
@@ -143,7 +143,7 @@ Point<double> TrilaterationNode::ecefToLla(double x, double y, double z)
     return Point<double>(sol_llr[0], sol_llr[1], sol_llr[2]);
 }
 
-void TrilaterationNode::fixEcefCallback(const iri_asterx1_gps::NavSatFix_ecef::ConstPtr &msg)
+void TrilaterationNode::fixEcefCallback(const iri_common_drivers_msgs::NavSatFix_ecef::ConstPtr &msg)
 {
     //std::cout << "%%%%  FIX ecef = (" << msg->x << ", " << msg->y << ", " << msg->z << ")\n";
     lastFixECEF.setX(msg->x);
@@ -162,7 +162,7 @@ void TrilaterationNode::fixEcefCallback(const iri_asterx1_gps::NavSatFix_ecef::C
 }
 
 
-void TrilaterationNode::raimEcefCallback(const iri_asterx1_gps::NavSatFix_ecef::ConstPtr &msg)
+void TrilaterationNode::raimEcefCallback(const iri_common_drivers_msgs::NavSatFix_ecef::ConstPtr &msg)
 {
     //std::cout << "%%%%  RAIM ecef = (" << msg->x << ", " << msg->y << ", " << msg->z << ")\n";
     lastRaimECEF.setX(msg->x);
@@ -181,7 +181,7 @@ void TrilaterationNode::raimEcefCallback(const iri_asterx1_gps::NavSatFix_ecef::
 }
 
 
-void TrilaterationNode::wolfEcefCallback(const iri_asterx1_gps::NavSatFix_ecef::ConstPtr &msg)
+void TrilaterationNode::wolfEcefCallback(const iri_common_drivers_msgs::NavSatFix_ecef::ConstPtr &msg)
 {
     //std::cout << "%%%%  RAIM ecef = (" << msg->x << ", " << msg->y << ", " << msg->z << ")\n";
     lastWolfECEF.setX(msg->x);

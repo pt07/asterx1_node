@@ -8,7 +8,7 @@ RawReceiverNode::RawReceiverNode() :
     navSub = nh.subscribe("/iri_asterx1_gps/gps_raw_data", 1000, &RawReceiverNode::navCallback, this);
 
     observationPub = nh.advertise<iri_common_drivers_msgs::SatellitePseudorangeArray>("/sat_pseudoranges", 5000);
-    raimFixPub = nh.advertise<iri_asterx1_gps::NavSatFix_ecef>("/raim_fix", 5000);
+    raimFixPub = nh.advertise<iri_common_drivers_msgs::NavSatFix_ecef>("/raim_fix", 5000);
 
 
     //GPStk stuff
@@ -26,7 +26,7 @@ RawReceiverNode::~RawReceiverNode()
 
 
 
-void RawReceiverNode::obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr &msg)
+void RawReceiverNode::obsCallback(const iri_common_drivers_msgs::GPS_meas::ConstPtr &msg)
 {
     gpstk::GPSWeekSecond time_gps = getTimeGPS(msg->time_stamp);
     ros::Time time_ros = ros::Time::now();
@@ -38,7 +38,7 @@ void RawReceiverNode::obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr &msg
 
     for (int i = 0; i < msg->type1_info.size(); ++i)
     {
-        const iri_asterx1_gps::GPS_meas_type1 meas_t1 = msg->type1_info[i];
+        const iri_common_drivers_msgs::GPS_meas_type1 meas_t1 = msg->type1_info[i];
         double P1 = meas_t1.pseudo_range;
 
         // non abbiamo le frequenze p2, quindi non possiamo calcolare una correzione atmosferica
@@ -145,7 +145,7 @@ void RawReceiverNode::obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr &msg
 
 
             // Publishing the raim fix
-            iri_asterx1_gps::NavSatFix_ecef raimFixMsg;
+            iri_common_drivers_msgs::NavSatFix_ecef raimFixMsg;
             //TODO fill up header etc
             raimFixMsg.x = raimSolver.Solution[0];
             raimFixMsg.y = raimSolver.Solution[1];
@@ -168,7 +168,7 @@ void RawReceiverNode::obsCallback(const iri_asterx1_gps::GPS_meas::ConstPtr &msg
 
 }
 
-void RawReceiverNode::navCallback(const iri_asterx1_gps::GPS_raw_frames::ConstPtr& msg)
+void RawReceiverNode::navCallback(const iri_common_drivers_msgs::GPS_raw_frames::ConstPtr& msg)
 {
     std::cout << "### NAV callback: sat " << (short) msg->sat_id << "  \tseq# " << msg->header.seq;
 
@@ -212,7 +212,7 @@ void RawReceiverNode::navCallback(const iri_asterx1_gps::GPS_raw_frames::ConstPt
     }
 }
 
-gpstk::GPSWeekSecond RawReceiverNode::getTimeGPS(const iri_asterx1_gps::GPS_time timestamp)
+gpstk::GPSWeekSecond RawReceiverNode::getTimeGPS(const iri_common_drivers_msgs::GPS_time timestamp)
 {
     return gpstk::GPSWeekSecond(timestamp.wnc, (double)timestamp.tow/1000, gpstk::TimeSystem::GPS);
 }

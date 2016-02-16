@@ -294,7 +294,7 @@ Eigen::Quaterniond VizHelperNode::rotateSatelliteFrame(const iri_common_drivers_
     return rotation;
 }
 
-void VizHelperNode::realFixCallback(const iri_asterx1_gps::NavSatFix_ecef::ConstPtr &msg)
+void VizHelperNode::realFixCallback(const iri_common_drivers_msgs::NavSatFix_ecef::ConstPtr &msg)
 {
     //std::cout << "real fix " << msg->x << ", " <<msg->y << ", " <<msg->z << ", " << "\n";
     publishRealFix(msg->x, msg->y, msg->z);
@@ -343,7 +343,7 @@ void VizHelperNode::publishRealFix(double x, double y, double z)
     markerPub.publish(m);
 }
 
-void VizHelperNode::estFixCallback(const iri_asterx1_gps::NavSatFix_ecef::ConstPtr &msg)
+void VizHelperNode::estFixCallback(const iri_common_drivers_msgs::NavSatFix_ecef::ConstPtr &msg)
 {
     std::cout << "estimated fix " << msg->x << ", " <<msg->y << ", " <<msg->z << ", " << "\n";
     publishEstFix(msg->x, msg->y, msg->z);

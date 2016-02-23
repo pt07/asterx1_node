@@ -9,7 +9,7 @@
         type="play"
         name="player" 
         output="screen"
-        args="/home/ptirindelli/bagfiles/parking_quimicas_2016-02-05-12-27-57.bag -r 1 -l"/>
+        args="/home/ptirindelli/bagfiles/parking_quimicas_2016-02-05-12-27-57.bag -r 10 -l"/>
 
 </launch>
 

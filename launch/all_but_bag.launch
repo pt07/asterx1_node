@@ -1,0 +1,23 @@
+<launch>
+
+  <node name="rviz"
+		pkg="rviz"
+		type="rviz"/>
+
+  <node pkg="asterx1_node"
+        type="raw_receiver_node"
+        name="raw_receiver_node" 
+        output="screen"/>
+
+  <node pkg="asterx1_node"
+        type="trilat_node"
+        name="trilat_node" 
+        output="screen"/>
+
+  <node pkg="asterx1_node"
+        type="viz_helper"
+        name="viz_helper"/>
+
+
+</launch>
+

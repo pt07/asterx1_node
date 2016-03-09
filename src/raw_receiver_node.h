@@ -69,7 +69,5 @@ protected:
     gpstk::PRSolution2 raimSolver; //object for handling RAIM
     gpstk::ZeroTropModel noTropModel;// Object for void-type tropospheric model (in case no meteorological RINEX is available)
     gpstk::ZeroTropModel *tropModelPtr;// Pointer to one of the two available tropospheric models. It points to the void model by default
-
-
 };
 #endif

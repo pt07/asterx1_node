@@ -9,7 +9,8 @@ TrilaterationNode::TrilaterationNode():
 {
     // Listeners
     pseudorangeSub = nh.subscribe("/sat_pseudoranges", 1000, &TrilaterationNode::pseudorangeCallback, this);
-    fixEcefSub = nh.subscribe("/iri_asterx1_gps/gps_ecef", 1000, &TrilaterationNode::fixEcefCallback, this);
+//    fixEcefSub = nh.subscribe("/iri_asterx1_gps/gps_ecef", 1000, &TrilaterationNode::fixEcefCallback, this);
+    fixEcefSub = nh.subscribe("/teo/sensors/gps/gps_ecef", 1000, &TrilaterationNode::fixEcefCallback, this);
     raimEcefSub = nh.subscribe("/raim_fix", 1000, &TrilaterationNode::raimEcefCallback, this);
     wolfEcefSub = nh.subscribe("/wolf_fix", 1000, &TrilaterationNode::wolfEcefCallback, this);
 
@@ -208,7 +209,8 @@ bool TrilaterationNode::writeOnFile(std::string path, Point<double> p)
 bool TrilaterationNode::writeOnFile(std::string path, double x, double y, double z)
 {
     Point<double> p(x, y, z);
-    if(abs(x)+abs(y)+abs(z) > 1000.0)
+    if( (abs(x)+abs(y)+abs(z) > 400.0)
+                || x<0 || y<0 || z<0)
     {
         std::cout << "!!!!!!!!!!  " << p.toString() << " non stampato\n";
         return false;
@@ -224,6 +226,10 @@ bool TrilaterationNode::writeOnFile(std::string path, double x, double y, double
         myfile << x << "," << y << "," << z << "\n";
         myfile.close();
         return true;
+    }
+    else
+    {
+        std::cout << "ERRORE in scrittura " << p.toString() << "\n";
     }
 
     return false;

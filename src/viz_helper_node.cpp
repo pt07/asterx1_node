@@ -10,14 +10,18 @@ VizHelperNode::VizHelperNode() :
     // Publishers
     pseudorangeSub = nh.subscribe("/sat_pseudoranges", 1000, &VizHelperNode::pseudorangeCallback, this);
     estFixSub = nh.subscribe("/est_fix", 1000, &VizHelperNode::estFixCallback, this);
-    realFixSub = nh.subscribe("/iri_asterx1_gps/gps_ecef", 1000, &VizHelperNode::realFixCallback, this);// both publisher receive the real fix. there are 2 because i have 2 different ros node that can publish
+//    realFixSub = nh.subscribe("/iri_asterx1_gps/gps_ecef", 1000, &VizHelperNode::realFixCallback, this);// both publisher receive the real fix. there are 2 because i have 2 different ros node that can publish
     realFixSub2 = nh.subscribe("/real_fix", 1000, &VizHelperNode::realFixCallback, this);// both publisher receive the real fix. there are 2 because i have 2 different ros node that can publish
+    realFixSub = nh.subscribe("/teo/sensors/gps/gps_ecef", 1000, &VizHelperNode::realFixCallback, this);// both publisher receive the real fix. there are 2 because i have 2 different ros node that can publish
 
     // Listeners
     markerPub = nh.advertise<visualization_msgs::Marker>("visualization_marker", 1000);
     odomAllPub = nh.advertise<nav_msgs::Odometry>("odom_all", 50);
 
     scale = KILOMETERS;
+
+    sensor_fix_received = trilat_fix_received = 0;
+    std::cout << std::setprecision(12);
 }
 
 VizHelperNode::~VizHelperNode(){ }
@@ -298,6 +302,13 @@ void VizHelperNode::realFixCallback(const iri_common_drivers_msgs::NavSatFix_ece
 {
     //std::cout << "real fix " << msg->x << ", " <<msg->y << ", " <<msg->z << ", " << "\n";
     publishRealFix(msg->x, msg->y, msg->z);
+
+    tf::Transform world2sensorFix(tf::Quaternion(0, 0, 0, 1),
+                                  tf::Vector3(msg->x*scale, msg->y*scale, msg->z*scale));
+    tf_b.sendTransform(tf::StampedTransform(world2sensorFix, ros::Time::now(), WORLD_FRAME, FIX_SENSOR_FRAME));
+
+    std::cout << "publishing tf world to " << FIX_SENSOR_FRAME << ". arrivati: " << sensor_fix_received << std::endl;
+
 }
 
 
@@ -340,6 +351,19 @@ void VizHelperNode::publishRealFix(double x, double y, double z)
 
     m.lifetime = ros::Duration(LIFETIME_SHORT);
 
+    markerPub.publish(m);
+
+
+    /*
+     * publish a small marker, visible only from FIX_SENSOR_FRAME
+     */
+    m.ns = "real_fix_detail";
+    m.id = 1;//sensor_fix_received++;
+    m.scale.x = m.scale.y = m.scale.z = 0.01;
+    m.color.r = 1.0f;
+    m.color.g = 0.0f;
+    m.color.b = 0.0f;
+    m.color.a = 0.6;
     markerPub.publish(m);
 }
 
@@ -388,5 +412,14 @@ void VizHelperNode::publishEstFix(double x, double y, double z)
 
     m.lifetime = ros::Duration(LIFETIME_SHORT);
 
+    markerPub.publish(m);
+
+    /*
+     * publish a small marker, visible only from FIX_SENSOR_FRAME
+     */
+    m.ns = "est_fix_detail";
+    m.id = 1;//trilat_fix_received++;
+    m.scale.x = m.scale.y = m.scale.z = 0.01;
+    m.color.a = 0.5;
     markerPub.publish(m);
 }

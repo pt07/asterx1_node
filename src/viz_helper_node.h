@@ -16,6 +16,8 @@
 #include <tf/transform_broadcaster.h>
 #include <nav_msgs/Odometry.h>
 
+#include <tf/transform_broadcaster.h>
+
 //to manage quaternions
 #include <Eigen/Geometry>
 
@@ -32,6 +34,7 @@ public:
 
     Eigen::Quaterniond rotateSatelliteFrame(const iri_common_drivers_msgs::SatellitePseudorange &sat, ros::Time time_ros);
 
+    tf::TransformBroadcaster tf_b;
 
 protected:
     void publishSat(const iri_common_drivers_msgs::SatellitePseudorange &sat, ros::Time time_ros);
@@ -47,6 +50,7 @@ protected:
 
 public:
     const std::string WORLD_FRAME = "world";
+    const std::string FIX_SENSOR_FRAME = "fix_sensor";
 
     const double EARTH_RADIUS = 6371000; // meters
     const double METERS = 1;
@@ -63,6 +67,7 @@ protected:
     ros::Subscriber realFixSub; // subscriber of fix position in ecef, computed by sensor
     ros::Subscriber realFixSub2; // subscriber of fix position in ecef, computed by gpstk
     ros::Subscriber estFixSub; // subscriber of fix position in ecef, computed by trilateration node
+    int sensor_fix_received, trilat_fix_received;
 
     // Publisher (markers)
     ros::Publisher markerPub;

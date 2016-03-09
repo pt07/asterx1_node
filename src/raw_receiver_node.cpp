@@ -4,8 +4,10 @@
 RawReceiverNode::RawReceiverNode() :
         nh(ros::this_node::getName())
 {
-    obsSub = nh.subscribe("/iri_asterx1_gps/gps_meas", 1000, &RawReceiverNode::obsCallback, this);
-    navSub = nh.subscribe("/iri_asterx1_gps/gps_raw_data", 1000, &RawReceiverNode::navCallback, this);
+    obsSub = nh.subscribe("/teo/sensors/gps/gps_meas", 1000, &RawReceiverNode::obsCallback, this);
+    navSub = nh.subscribe("/teo/sensors/gps/gps_raw_data", 1000, &RawReceiverNode::navCallback, this);
+//    obsSub = nh.subscribe("/iri_asterx1_gps/gps_meas", 1000, &RawReceiverNode::obsCallback, this);
+//    navSub = nh.subscribe("/iri_asterx1_gps/gps_raw_data", 1000, &RawReceiverNode::navCallback, this);
 
     observationPub = nh.advertise<iri_common_drivers_msgs::SatellitePseudorangeArray>("/sat_pseudoranges", 5000);
     raimFixPub = nh.advertise<iri_common_drivers_msgs::NavSatFix_ecef>("/raim_fix", 5000);

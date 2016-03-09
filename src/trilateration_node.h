@@ -50,10 +50,10 @@ protected:
 
 
     bool saveOnDisk = true;
-    const std::string PATH_REAL_POS = "/home/ptirindelli/bagfiles/output/real.txt";
-    const std::string PATH_EST_POS = "/home/ptirindelli/bagfiles/output/est.txt";
-    const std::string PATH_RAIM_POS = "/home/ptirindelli/bagfiles/output/raim.txt";
-    const std::string PATH_WOLF_POS = "/home/ptirindelli/bagfiles/output/wolf.txt";
+    const std::string PATH_REAL_POS = "/home/ptirindelli/Desktop/gps_visualizer/real.txt";
+    const std::string PATH_EST_POS = "/home/ptirindelli/Desktop/gps_visualizer/est.txt";
+    const std::string PATH_RAIM_POS = "/home/ptirindelli/Desktop/gps_visualizer/raim.txt";
+    const std::string PATH_WOLF_POS = "/home/ptirindelli/Desktop/gps_visualizer/wolf.txt";
 
     int counterReal = 0;
     int counterEst = 0;

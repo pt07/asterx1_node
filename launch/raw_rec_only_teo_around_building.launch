@@ -4,8 +4,8 @@
         type="raw_receiver_node"
         name="raw_receiver_node" 
         output="screen">
-    <!--<remap from="/iri_asterx1_gps/gps_meas" to="/teo/sensors/gps/gps_meas"/>
-    <!--<remap from="/iri_asterx1_gps/gps_raw_data" to="/teo/sensors/gps/gps_raw_data"/>-->
+    <!-- <remap from="/iri_asterx1_gps/gps_meas" to="/teo/sensors/gps/gps_meas"/> -->
+    <!-- <remap from="/iri_asterx1_gps/gps_raw_data" to="/teo/sensors/gps/gps_raw_data"/>  -->
   </node>
 
   <node pkg="rosbag"

@@ -9,22 +9,22 @@
         type="raw_receiver_node"
         name="raw_receiver_node" 
         output="screen">
-    <!--<remap from="/iri_asterx1_gps/gps_meas" to="/teo/sensors/gps/gps_meas"/>
-    <!--<remap from="/iri_asterx1_gps/gps_raw_data" to="/teo/sensors/gps/gps_raw_data"/>-->
+    <!-- <remap from="/iri_asterx1_gps/gps_meas" to="/teo/sensors/gps/gps_meas"/> -->
+    <!-- <remap from="/iri_asterx1_gps/gps_raw_data" to="/teo/sensors/gps/gps_raw_data"/> -->
   </node>
 
   <node pkg="asterx1_node"
         type="trilat_node"
         name="trilat_node" 
         output="screen">
-    <!--<remap from="/iri_asterx1_gps/gps_ecef" to="/teo/sensors/gps/gps_ecef"/>-->
+    <!-- <remap from="/iri_asterx1_gps/gps_ecef" to="/teo/sensors/gps/gps_ecef"/> -->
   </node>
 
   <node pkg="asterx1_node"
         type="viz_helper"
         name="viz_helper">
-    <!--<remap from="/real_fix" to="/teo/sensors/gps/gps_ecef"/>
-    <!--<remap from="/iri_asterx1_gps/gps_ecef" to="/teo/sensors/gps/gps_ecef"/>-->
+    <!-- <remap from="/real_fix" to="/teo/sensors/gps/gps_ecef"/>
+    <!-- <remap from="/iri_asterx1_gps/gps_ecef" to="/teo/sensors/gps/gps_ecef"/> -->
   </node>
 
 </launch>

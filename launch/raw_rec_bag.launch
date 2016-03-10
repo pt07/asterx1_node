@@ -2,8 +2,11 @@
 
   <node pkg="asterx1_node"
         type="raw_receiver_node"
-        name="raw_receiver_node"
-	    output="screen"/>
+        name="raw_receiver_node" 
+        output="screen">
+    <!--<remap from="/iri_asterx1_gps/gps_meas" to="/teo/sensors/gps/gps_meas"/>
+    <!--<remap from="/iri_asterx1_gps/gps_raw_data" to="/teo/sensors/gps/gps_raw_data"/>-->
+  </node>
 
 <arg name="bag_file_name" default="/home/ptirindelli/rosbags/teo/2016-03-07-16-56-11.bag" />
 

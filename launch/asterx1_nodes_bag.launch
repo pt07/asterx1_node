@@ -1,13 +1,26 @@
 <launch>
 
-<arg name="bag_file_name" default="/home/ptirindelli/rosbags/teo/2016-03-07-16-56-11.bag" />
+<!-- (1) first working: teo sidewalk --> 
+<arg name="bag_file_name1" default="/home/ptirindelli/rosbags/teo/2016-03-07-16-56-11.bag" />
+
+<!-- (2) session in the car park: from IRI to car park --> 
+<arg name="bag_file_name2" default="/home/ptirindelli/rosbags/teo/2016-03-18-16-19-11.bag" />
+
+<!-- (3) session in the car park: two circles --> 
+<arg name="bag_file_name3" default="/home/ptirindelli/rosbags/teo/2016-03-18-16-39-09.bag" />
+
+<!-- (4) session in the car park: two eight --> 
+<arg name="bag_file_name4" default="/home/ptirindelli/rosbags/teo/2016-03-18-16-50-28.bag" />
+
+<!-- (5) session in the car park: from car park to IRI -->
+<arg name="bag_file_name5" default="/home/ptirindelli/rosbags/teo/2016-03-18-17-15-42.bag" /> 
 
 <include file="$(find asterx1_node)/launch/asterx1_nodes.launch" />
 
 <node pkg="rosbag"
       type="play"
       name="rosbag"
-      args="-d 0 -r 1 --clock -k $(arg bag_file_name)"/>
+      args="-d 0 -r 100 --clock -k $(arg bag_file_name2)"/>
 
 <param name="use_sim_time" value="true" />
 	

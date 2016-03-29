@@ -55,6 +55,7 @@ void TrilaterationNode::pseudorangeCallback(const iri_common_drivers_msgs::Satel
         measurements.push_back(m);
     }
 
+    tr.setVerboseLevel(0);
 
     Receiver estRec = tr.computePosition(measurements);
     Point<double> estRecLLA = ecefToLla(estRec.pos);
@@ -220,7 +221,7 @@ bool TrilaterationNode::writeOnFile(std::string path, double x, double y, double
     std::ofstream myfile (path, std::ios::app);
     if (myfile.is_open())
     {
-        std::cout << "WRITING " << p.toString() << "\n";
+//        std::cout << "WRITING " << p.toString() << "\n";
         // latitude,longitude,elevation
         myfile << std::setprecision(12);
         myfile << x << "," << y << "," << z << "\n";

@@ -7,6 +7,13 @@
 VizHelperNode::VizHelperNode() :
         nh(ros::this_node::getName())
 {
+    nh.param<double>("map_p_x", map_p_x, 4789373.84373);
+    nh.param<double>("map_p_y", map_p_y, 177039.859069);
+    nh.param<double>("map_p_z", map_p_z, 4194527.79395);
+    nh.param<bool>("trajectory_mode", trajectory_mode, false);
+
+
+
     // Publishers
     pseudorangeSub = nh.subscribe("/sat_pseudoranges", 1000, &VizHelperNode::pseudorangeCallback, this);
     estFixSub = nh.subscribe("/est_fix", 1000, &VizHelperNode::estFixCallback, this);
@@ -22,12 +29,25 @@ VizHelperNode::VizHelperNode() :
 
     sensor_fix_received = trilat_fix_received = 0;
     std::cout << std::setprecision(12);
+
+
+    broadcastTFmap();
+
+}
+
+void VizHelperNode::broadcastTFmap()
+{
+    tf::Transform world2map(tf::createQuaternionFromRPY(0, 60*M_PI/180, 0), tf::Vector3(map_p_x*scale, map_p_y*scale, map_p_z*scale));
+    tf_b.sendTransform(tf::StampedTransform(world2map, ros::Time::now(), WORLD_FRAME, "map"));
 }
 
 VizHelperNode::~VizHelperNode(){ }
 
 void VizHelperNode::pseudorangeCallback(const iri_common_drivers_msgs::SatellitePseudorangeArray::ConstPtr &msg)
 {
+    if(trajectory_mode)
+        return;
+
     std::cout << "Visualizing " << msg->measurements.size() << " sats at " << msg->time_ros << "\n";
 
     for (int i = 0; i < msg->measurements.size(); ++i)
@@ -72,7 +92,7 @@ void VizHelperNode::publishSat(const iri_common_drivers_msgs::SatellitePseudoran
     m.color.b = 0.0f;
     m.color.a = 0.5;
 
-    m.lifetime = ros::Duration(LIFETIME_SHORT); //after tot seconds satellites are deleted
+    m.lifetime = LIFETIME_SHORT; //after tot seconds satellites are deleted
 
     markerPub.publish(m);
 
@@ -163,7 +183,7 @@ void VizHelperNode::publishSatVelocity(const iri_common_drivers_msgs::SatelliteP
     m.color.b = 1.0f;
     m.color.a = 1.0;
 
-    m.lifetime = ros::Duration(LIFETIME_SHORT);
+    m.lifetime = LIFETIME_SHORT;
 
     markerPub.publish(m);
 }
@@ -208,7 +228,7 @@ void VizHelperNode::publishSatSphere(const iri_common_drivers_msgs::SatellitePse
     m.color.b = 0.5f;
     m.color.a = 0.2;
 
-    m.lifetime = ros::Duration(LIFETIME_SHORT);
+    m.lifetime = LIFETIME_SHORT;
 
     markerPub.publish(m);
 
@@ -309,12 +329,18 @@ void VizHelperNode::realFixCallback(const iri_common_drivers_msgs::NavSatFix_ece
 
     std::cout << "publishing tf world to " << FIX_SENSOR_FRAME << ". arrivati: " << sensor_fix_received << std::endl;
 
+    broadcastTFmap();
+
+//    tf::Transform world2map(tf::Quaternion(0, 0, 0, 1), tf::Vector3(map_p_x*scale, map_p_y*scale, map_p_z*scale));
+//    tf_b.sendTransform(tf::StampedTransform(world2map, ros::Time::now(), WORLD_FRAME, "map"));
+
 }
 
 
 void VizHelperNode::publishRealFix(double x, double y, double z)
 {
     visualization_msgs::Marker m;
+
     m.header.frame_id = WORLD_FRAME;
     m.header.stamp = ros::Time::now();
 
@@ -349,17 +375,19 @@ void VizHelperNode::publishRealFix(double x, double y, double z)
     m.color.b = 0.0f;
     m.color.a = 1.0;
 
-    m.lifetime = ros::Duration(LIFETIME_SHORT);
+    m.lifetime = LIFETIME_SHORT;
 
-    markerPub.publish(m);
+
+    if(!trajectory_mode)
+        markerPub.publish(m);
 
 
     /*
      * publish a small marker, visible only from FIX_SENSOR_FRAME
      */
     m.ns = "real_fix_detail";
-    m.id = 1;//sensor_fix_received++;
-    m.scale.x = m.scale.y = m.scale.z = 0.01;
+    m.id = sensor_fix_received++;
+    m.scale.x = m.scale.y = m.scale.z = SMALL_MARKER_SIZE;
     m.color.r = 1.0f;
     m.color.g = 0.0f;
     m.color.b = 0.0f;
@@ -410,16 +438,18 @@ void VizHelperNode::publishEstFix(double x, double y, double z)
     m.color.b = 1.0f;
     m.color.a = 1.0;
 
-    m.lifetime = ros::Duration(LIFETIME_SHORT);
+    m.lifetime = LIFETIME_SHORT;
 
-    markerPub.publish(m);
+
+    if(trajectory_mode)
+        markerPub.publish(m);
 
     /*
      * publish a small marker, visible only from FIX_SENSOR_FRAME
      */
     m.ns = "est_fix_detail";
-    m.id = 1;//trilat_fix_received++;
-    m.scale.x = m.scale.y = m.scale.z = 0.01;
+    m.id = trilat_fix_received++;
+    m.scale.x = m.scale.y = m.scale.z = SMALL_MARKER_SIZE;
     m.color.a = 0.5;
     markerPub.publish(m);
 }

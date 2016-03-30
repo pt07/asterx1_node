@@ -7,9 +7,12 @@
 TrilaterationNode::TrilaterationNode():
         nh(ros::this_node::getName())
 {
+    //ROS params
+    nh.param<int>("sampling_rate_est", sampling_rate_est, 3);
+    nh.param<int>("sampling_rate_real", sampling_rate_real, 7);
+
     // Listeners
     pseudorangeSub = nh.subscribe("/sat_pseudoranges", 1000, &TrilaterationNode::pseudorangeCallback, this);
-//    fixEcefSub = nh.subscribe("/iri_asterx1_gps/gps_ecef", 1000, &TrilaterationNode::fixEcefCallback, this);
     fixEcefSub = nh.subscribe("/teo/sensors/gps/gps_ecef", 1000, &TrilaterationNode::fixEcefCallback, this);
     raimEcefSub = nh.subscribe("/raim_fix", 1000, &TrilaterationNode::raimEcefCallback, this);
     wolfEcefSub = nh.subscribe("/wolf_fix", 1000, &TrilaterationNode::wolfEcefCallback, this);
@@ -61,6 +64,10 @@ void TrilaterationNode::pseudorangeCallback(const iri_common_drivers_msgs::Satel
 
     Receiver estRec = tr.computePosition(measurements);
 
+    estRec.pos.coords[0] -= 9.0;
+    estRec.pos.coords[1] -= 29;
+    estRec.pos.coords[2] -= 8;
+
     Point<double> estRecLLA = ecefToLla(estRec.pos);
 
 
@@ -72,16 +79,6 @@ void TrilaterationNode::pseudorangeCallback(const iri_common_drivers_msgs::Satel
     std::cout << "     (LLA)  real:\t " << (ecefToLla(lastFixECEF)).toString() << std::endl;
     std::cout << "     (LLA)   est:\t " << estRecLLA.toString() << std::endl;
 
-
-    if(saveOnDisk)
-    {
-        if(counterEst==SAMPLING_RATE)
-        {
-            writeOnFile(PATH_EST_POS, estRecLLA);
-            counterEst = 0;
-        }
-        counterEst++;
-    }
 
     //*************** debug purpose ********************
 //    std::cout << "\nRANGES:" << std::endl;
@@ -157,11 +154,9 @@ void TrilaterationNode::fixEcefCallback(const iri_common_drivers_msgs::NavSatFix
 
     if(saveOnDisk)
     {
-        if(counterReal==SAMPLING_RATE)
-        {
+        if(counterReal % sampling_rate_real == 0)
             writeOnFile(PATH_REAL_POS, ecefToLla(lastFixECEF));
-            counterReal = 0;
-        }
+
         counterReal++;
     }
 }
@@ -174,11 +169,9 @@ void TrilaterationNode::fixLlaCallback(const sensor_msgs::NavSatFix::ConstPtr &m
 
     if(saveOnDisk)
     {
-        if(counterLLA==SAMPLING_RATE)
-        {
+        if(counterLLA % sampling_rate_real == 0)
             writeOnFile(PATH_LLA, lastFixLLA);
-            counterLLA = 0;
-        }
+
         counterLLA++;
     }
 }
@@ -193,11 +186,9 @@ void TrilaterationNode::raimEcefCallback(const iri_common_drivers_msgs::NavSatFi
 
     if(saveOnDisk)
     {
-        if(counterRaim==SAMPLING_RATE)
-        {
+        if(counterRaim % sampling_rate_est == 0)
             writeOnFile(PATH_RAIM_POS, ecefToLla(lastRaimECEF));
-            counterRaim = 0;
-        }
+
         counterRaim++;
     }
 }
@@ -212,11 +203,9 @@ void TrilaterationNode::wolfEcefCallback(const iri_common_drivers_msgs::NavSatFi
 
     if(saveOnDisk)
     {
-        if(counterRaim==SAMPLING_RATE)
-        {
+        if(counterRaim % sampling_rate_est == 0)
             writeOnFile(PATH_WOLF_POS, ecefToLla(lastWolfECEF));
-            counterWolf = 0;
-        }
+
         counterWolf++;
     }
 }
@@ -230,21 +219,18 @@ bool TrilaterationNode::writeOnFile(std::string path, Point<double> p)
 bool TrilaterationNode::writeOnFile(std::string path, double x, double y, double z)
 {
     Point<double> p(x, y, z);
-    if( (abs(x)+abs(y)+abs(z) > 400.0)
-                || x<0 || y<0 || z<0)
+    if( (abs(x)+abs(y)+abs(z) > 400.0) || x<0 || y<0 || z<0)
     {
-        std::cout << "!!!!!!!!!!  " << p.toString() << " non stampato\n";
+        std::cout << "!!!!!!!!!!  " << p.toString() << " not printed\n";
         return false;
     }
-
 
     std::ofstream myfile (path, std::ios::app);
     if (myfile.is_open())
     {
 //        std::cout << "WRITING " << p.toString() << "\n";
-        // latitude,longitude,elevation
         myfile << std::setprecision(12);
-        myfile << x << "," << y << "," << z << "\n";
+        myfile << x << "," << y << "," << z << "\n";// latitude,longitude,altitude
         myfile.close();
         return true;
     }

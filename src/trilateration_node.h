@@ -62,7 +62,7 @@ protected:
     int counterRaim = 0;
     int counterWolf = 0;
     int counterLLA = 0;
-    const int SAMPLING_RATE = 1;
+    int sampling_rate_est, sampling_rate_real;
 
 protected:
     Trilateration tr;

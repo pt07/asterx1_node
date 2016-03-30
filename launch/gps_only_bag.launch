@@ -1,0 +1,47 @@
+<launch>
+
+<!-- (1) GPS only: -->
+<arg name="bag_file_name1" default="/home/ptirindelli/rosbags/teo/gps_only/iri-2marciapiede-parcheggio.bag" />
+<arg name="bag_file_name2" default="/home/ptirindelli/rosbags/teo/gps_only/parcheggio_alto.bag" />
+<arg name="bag_file_name3" default="/home/ptirindelli/rosbags/teo/gps_only/parcheggio_basso.bag" />
+<arg name="bag_file_name4" default="/home/ptirindelli/rosbags/teo/gps_only/pedone_parcheggio_basso.bag" />
+<arg name="bag_file_name5" default="/home/ptirindelli/rosbags/teo/gps_only/pedone_parcheggio_alto.bag" /> 
+<arg name="bag_file_name6" default="/home/ptirindelli/rosbags/teo/gps_only/pedone_phi_marciapiede_cortile_lab.bag" />
+
+  <node name="rviz"
+		pkg="rviz"
+		type="rviz"
+		args="-d $(find raw_gps_ros)/rviz/asterx1_view.rviz"/>
+
+  <node pkg="raw_gps_ros"
+        type="raw_receiver_node"
+        name="raw_receiver_node">
+        output="screen" ><!--  -->
+    <remap from="/teo/sensors/gps/gps_meas" to="/iri_asterx1_gps/gps_meas"/> <!--  -->
+    <remap from="/teo/sensors/gps/gps_raw_data" to="/iri_asterx1_gps/gps_raw_data"/> <!--  -->
+  </node>
+
+  <node pkg="raw_gps_ros"
+        type="trilat_node"
+        name="trilat_node" 
+        output="screen">
+     <remap from="/teo/sensors/gps/gps_ecef" to="/iri_asterx1_gps/gps_ecef"/> <!--  -->
+     <remap from="/teo/sensors/gps/gps" to="/iri_asterx1_gps/gps"/> <!--  -->
+  </node>
+
+  <node pkg="raw_gps_ros"
+        type="viz_helper"
+        name="viz_helper">
+    <remap from="/real_fix" to="/teo/sensors/gps/gps_ecef"/> <!--  -->
+    <remap from="/teo/sensors/gps/gps_ecef" to="/iri_asterx1_gps/gps_ecef"/> <!--  -->
+  </node>
+
+
+<node pkg="rosbag"
+      type="play"
+      name="rosbag"
+      args="-d 0 -r 100 --clock -k $(arg bag_file_name6)"/>
+
+<param name="use_sim_time" value="true" />
+	
+</launch>

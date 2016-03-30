@@ -15,7 +15,24 @@
 <!-- (5) session in the car park: from car park to IRI -->
 <arg name="bag_file_name5" default="/home/ptirindelli/rosbags/teo/2016-03-18-17-15-42.bag" /> 
 
-<include file="$(find asterx1_node)/launch/asterx1_nodes.launch" />
+
+  <node pkg="asterx1_node"
+        type="raw_receiver_node"
+        name="raw_receiver_node">
+        <!-- output="screen" > -->
+    <!-- <remap from="/iri_asterx1_gps/gps_meas" to="/teo/sensors/gps/gps_meas"/> -->
+    <!-- <remap from="/iri_asterx1_gps/gps_raw_data" to="/teo/sensors/gps/gps_raw_data"/> -->
+  </node>
+
+  <node pkg="asterx1_node"
+        type="trilat_node"
+        name="trilat_node" 
+        output="screen">
+         <param name="sampling_rate_real" value="6"/>
+         <param name="sampling_rate_est" value="2"/>
+    <!-- <remap from="/iri_asterx1_gps/gps_ecef" to="/teo/sensors/gps/gps_ecef"/> -->
+  </node>
+
 
 <node pkg="rosbag"
       type="play"

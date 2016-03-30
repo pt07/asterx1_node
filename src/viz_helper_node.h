@@ -77,7 +77,15 @@ protected:
 
     tf::TransformBroadcaster transBroadcaster;
 
-    const double LIFETIME_SHORT = 0.5;
+
+//    const ros::Duration LIFETIME_SHORT = ros::Duration(20.5);
+    const ros::Duration LIFETIME_SHORT = ros::Duration(0);
+    const double SMALL_MARKER_SIZE = 0.0008;
+
+    bool trajectory_mode;
+
+    double map_p_x,map_p_y,map_p_z;
+    void broadcastTFmap();
 };
 
 

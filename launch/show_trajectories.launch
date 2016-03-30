@@ -1,5 +1,7 @@
 <launch>
 
+<arg name="bag_file_name" default="/home/ptirindelli/rosbags/teo/2016-03-07-16-56-11.bag" />
+	
   <node name="rviz"
 		pkg="rviz"
 		type="rviz"
@@ -23,9 +25,20 @@
   <node pkg="asterx1_node"
         type="viz_helper"
         name="viz_helper">
+        <param name="trajectory_mode" value="true"/>
+        <param name="map_p_x" value="4789373"/>
+        <param name="map_p_y" value="177039"/>
+        <param name="map_p_z" value="4194527"/>
     <!-- <remap from="/real_fix" to="/teo/sensors/gps/gps_ecef"/> -->
     <!-- <remap from="/iri_asterx1_gps/gps_ecef" to="/teo/sensors/gps/gps_ecef"/> -->
   </node>
+
+<node pkg="rosbag"
+      type="play"
+      name="rosbag"
+      args="-d 0 -r 20 -l --clock -k $(arg bag_file_name)"/>
+
+<param name="use_sim_time" value="true" />
 
 </launch>
 

@@ -30,8 +30,8 @@ VizHelperNode::VizHelperNode() :
     sensor_fix_received = trilat_fix_received = 0;
     std::cout << std::setprecision(12);
 
-
     broadcastTFmap();
+
 
 }
 

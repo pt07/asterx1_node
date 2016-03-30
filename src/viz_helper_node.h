@@ -50,7 +50,7 @@ protected:
 
 public:
     const std::string WORLD_FRAME = "world";
-    const std::string FIX_SENSOR_FRAME = "fix_sensor";
+    const std::string FIX_SENSOR_FRAME = "fix";
 
     const double EARTH_RADIUS = 6371000; // meters
     const double METERS = 1;
@@ -86,6 +86,8 @@ protected:
 
     double map_p_x,map_p_y,map_p_z;
     void broadcastTFmap();
+
+    int sampling_rate_real, sampling_rate_est;
 };
 
 

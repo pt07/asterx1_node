@@ -9,8 +9,8 @@
 
   <node pkg="asterx1_node"
         type="raw_receiver_node"
-        name="raw_receiver_node" 
-        output="screen">
+        name="raw_receiver_node">
+        <!-- output="screen"> -->
     <!-- <remap from="/iri_asterx1_gps/gps_meas" to="/teo/sensors/gps/gps_meas"/> -->
     <!-- <remap from="/iri_asterx1_gps/gps_raw_data" to="/teo/sensors/gps/gps_raw_data"/> -->
   </node>
@@ -29,6 +29,8 @@
         <param name="map_p_x" value="4789373"/>
         <param name="map_p_y" value="177039"/>
         <param name="map_p_z" value="4194527"/>
+        <param name="sampling_rate_real" value="10"/>
+        <param name="sampling_rate_est" value="10"/>
     <!-- <remap from="/real_fix" to="/teo/sensors/gps/gps_ecef"/> -->
     <!-- <remap from="/iri_asterx1_gps/gps_ecef" to="/teo/sensors/gps/gps_ecef"/> -->
   </node>

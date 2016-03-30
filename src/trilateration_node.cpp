@@ -64,9 +64,9 @@ void TrilaterationNode::pseudorangeCallback(const iri_common_drivers_msgs::Satel
 
     Receiver estRec = tr.computePosition(measurements);
 
-    estRec.pos.coords[0] -= 9.0;
-    estRec.pos.coords[1] -= 29;
-    estRec.pos.coords[2] -= 8;
+    estRec.pos.coords[0] -= 10;
+    estRec.pos.coords[1] -= 30;
+    estRec.pos.coords[2] -= 9;
 
     Point<double> estRecLLA = ecefToLla(estRec.pos);
 
@@ -111,7 +111,7 @@ void TrilaterationNode::pseudorangeCallback(const iri_common_drivers_msgs::Satel
 
 
     //************ END DEBUG PRINTINGS ***********
-    if(estRecLLA.coords[0]<39 || estRecLLA.coords[0]>43 || estRecLLA.coords[1]<0 || estRecLLA.coords[1]>2.3 || estRecLLA.coords[2]<90 || estRecLLA.coords[2]>125)
+    if(estRecLLA.coords[0]<39 || estRecLLA.coords[0]>43 || estRecLLA.coords[1]<0 || estRecLLA.coords[1]>2.3 || estRecLLA.coords[2]<90 || estRecLLA.coords[2]>120)
     {
         std::cout << "bad estimation" << std::endl;
     } else {
@@ -228,7 +228,7 @@ bool TrilaterationNode::writeOnFile(std::string path, Point<double> p)
 bool TrilaterationNode::writeOnFile(std::string path, double x, double y, double z)
 {
     Point<double> p(x, y, z);//(abs(x)+abs(y)+abs(z) > 400.0)
-    if( x<39 || x>43 || y<0 || y>2.3 || z<90 || z>125)
+    if( x<39 || x>43 || y<0 || y>2.3 || z<90 || z>120)
     {
         std::cout << "!!!!!!!!!!  " << p.toString() << " not printed\n";
         return false;

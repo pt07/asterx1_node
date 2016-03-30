@@ -11,6 +11,9 @@ VizHelperNode::VizHelperNode() :
     nh.param<double>("map_p_y", map_p_y, 177039.859069);
     nh.param<double>("map_p_z", map_p_z, 4194527.79395);
     nh.param<bool>("trajectory_mode", trajectory_mode, false);
+    nh.param<int>("sampling_rate_est", sampling_rate_est, 1);
+    nh.param<int>("sampling_rate_real", sampling_rate_real, 1);
+
 
 
 
@@ -320,20 +323,24 @@ Eigen::Quaterniond VizHelperNode::rotateSatelliteFrame(const iri_common_drivers_
 
 void VizHelperNode::realFixCallback(const iri_common_drivers_msgs::NavSatFix_ecef::ConstPtr &msg)
 {
-    //std::cout << "real fix " << msg->x << ", " <<msg->y << ", " <<msg->z << ", " << "\n";
-    publishRealFix(msg->x, msg->y, msg->z);
+    sensor_fix_received++;
 
-    tf::Transform world2sensorFix(tf::Quaternion(0, 0, 0, 1),
-                                  tf::Vector3(msg->x*scale, msg->y*scale, msg->z*scale));
-    tf_b.sendTransform(tf::StampedTransform(world2sensorFix, ros::Time::now(), WORLD_FRAME, FIX_SENSOR_FRAME));
+    if(sensor_fix_received % sampling_rate_real == 0)
+    {
+        //std::cout << "real fix " << msg->x << ", " <<msg->y << ", " <<msg->z << ", " << "\n";
+        publishRealFix(msg->x, msg->y, msg->z);
 
-    std::cout << "publishing tf world to " << FIX_SENSOR_FRAME << ". arrivati: " << sensor_fix_received << std::endl;
+        tf::Transform world2sensorFix(tf::Quaternion(0, 0, 0, 1),
+                                      tf::Vector3(msg->x * scale, msg->y * scale, msg->z * scale));
+        tf_b.sendTransform(tf::StampedTransform(world2sensorFix, ros::Time::now(), WORLD_FRAME, FIX_SENSOR_FRAME));
 
-    broadcastTFmap();
+        std::cout << "publishing tf world to " << FIX_SENSOR_FRAME << ". arrivati: " << sensor_fix_received << std::endl;
+
+        broadcastTFmap();
 
 //    tf::Transform world2map(tf::Quaternion(0, 0, 0, 1), tf::Vector3(map_p_x*scale, map_p_y*scale, map_p_z*scale));
 //    tf_b.sendTransform(tf::StampedTransform(world2map, ros::Time::now(), WORLD_FRAME, "map"));
-
+    }
 }
 
 
@@ -386,7 +393,7 @@ void VizHelperNode::publishRealFix(double x, double y, double z)
      * publish a small marker, visible only from FIX_SENSOR_FRAME
      */
     m.ns = "real_fix_detail";
-    m.id = sensor_fix_received++;
+    m.id = sensor_fix_received;
     m.scale.x = m.scale.y = m.scale.z = SMALL_MARKER_SIZE;
     m.color.r = 1.0f;
     m.color.g = 0.0f;
@@ -397,8 +404,12 @@ void VizHelperNode::publishRealFix(double x, double y, double z)
 
 void VizHelperNode::estFixCallback(const iri_common_drivers_msgs::NavSatFix_ecef::ConstPtr &msg)
 {
-    std::cout << "estimated fix " << msg->x << ", " <<msg->y << ", " <<msg->z << ", " << "\n";
-    publishEstFix(msg->x, msg->y, msg->z);
+    trilat_fix_received ++;
+    if(trilat_fix_received % sampling_rate_est == 0)
+    {
+        std::cout << "estimated fix " << msg->x << ", " <<msg->y << ", " <<msg->z << ", " << "\n";
+        publishEstFix(msg->x, msg->y, msg->z);
+    }
 }
 
 void VizHelperNode::publishEstFix(double x, double y, double z)
@@ -413,7 +424,7 @@ void VizHelperNode::publishEstFix(double x, double y, double z)
     m.id = 1;
 
     // Set the marker type.
-    m.type = visualization_msgs::Marker::CUBE;
+    m.type = visualization_msgs::Marker::SPHERE;
 
     // Set the marker action.  Options are ADD, DELETE, and new in ROS Indigo: 3 (DELETEALL)
     m.action = visualization_msgs::Marker::ADD;
@@ -448,7 +459,7 @@ void VizHelperNode::publishEstFix(double x, double y, double z)
      * publish a small marker, visible only from FIX_SENSOR_FRAME
      */
     m.ns = "est_fix_detail";
-    m.id = trilat_fix_received++;
+    m.id = trilat_fix_received;
     m.scale.x = m.scale.y = m.scale.z = SMALL_MARKER_SIZE;
     m.color.a = 0.5;
     markerPub.publish(m);

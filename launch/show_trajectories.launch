@@ -19,6 +19,8 @@
         type="trilat_node"
         name="trilat_node" 
         output="screen">
+         <param name="sampling_rate_real" value="7"/>
+         <param name="sampling_rate_est" value="3"/>
     <!-- <remap from="/iri_asterx1_gps/gps_ecef" to="/teo/sensors/gps/gps_ecef"/> -->
   </node>
 

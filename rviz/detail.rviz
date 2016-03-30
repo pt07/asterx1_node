@@ -80,7 +80,7 @@ Visualization Manager:
         All Enabled: true
         fix:
           Value: true
-        map:
+        origin:
           Value: true
         teo_base_footprint:
           Value: true
@@ -121,14 +121,14 @@ Visualization Manager:
         world:
           fix:
             {}
-          map:
+          origin:
             {}
       Update Interval: 0
       Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Fixed Frame: map
+    Fixed Frame: origin
     Frame Rate: 30
   Name: root
   Tools:
@@ -149,7 +149,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 0.0487511
+      Distance: 0.0501561
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
@@ -161,10 +161,10 @@ Visualization Manager:
         Z: -0.00134641
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 1.5548
+      Pitch: 1.5648
       Target Frame: fix
       Value: XYOrbit (rviz)
-      Yaw: 3.89859
+      Yaw: 5.12042
     Saved: ~
 Window Geometry:
   Displays:

@@ -41,7 +41,7 @@ VizHelperNode::VizHelperNode() :
 void VizHelperNode::broadcastTFmap()
 {
     tf::Transform world2map(tf::createQuaternionFromRPY(0, 60*M_PI/180, 0), tf::Vector3(map_p_x*scale, map_p_y*scale, map_p_z*scale));
-    tf_b.sendTransform(tf::StampedTransform(world2map, ros::Time::now(), WORLD_FRAME, "map"));
+    tf_b.sendTransform(tf::StampedTransform(world2map, ros::Time::now(), WORLD_FRAME, "origin"));
 }
 
 VizHelperNode::~VizHelperNode(){ }

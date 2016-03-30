@@ -13,6 +13,7 @@ TrilaterationNode::TrilaterationNode():
     fixEcefSub = nh.subscribe("/teo/sensors/gps/gps_ecef", 1000, &TrilaterationNode::fixEcefCallback, this);
     raimEcefSub = nh.subscribe("/raim_fix", 1000, &TrilaterationNode::raimEcefCallback, this);
     wolfEcefSub = nh.subscribe("/wolf_fix", 1000, &TrilaterationNode::wolfEcefCallback, this);
+    llaSub = nh.subscribe("/teo/sensors/gps/gps", 1000, &TrilaterationNode::fixLlaCallback, this);
 
     //Publisher
     estFixPub = nh.advertise<iri_common_drivers_msgs::NavSatFix_ecef>("/est_fix", 5000);
@@ -23,6 +24,7 @@ TrilaterationNode::TrilaterationNode():
     myfile.open(PATH_RAIM_POS);  myfile<<"latitude,longitude,altitude\n";   myfile.close();
     myfile.open(PATH_REAL_POS);  myfile<<"latitude,longitude,altitude\n";   myfile.close();
     myfile.open(PATH_WOLF_POS);  myfile<<"latitude,longitude,altitude\n";   myfile.close();
+    myfile.open(PATH_LLA);  myfile<<"latitude,longitude,altitude\n";   myfile.close();
 
 }
 
@@ -58,6 +60,7 @@ void TrilaterationNode::pseudorangeCallback(const iri_common_drivers_msgs::Satel
     tr.setVerboseLevel(0);
 
     Receiver estRec = tr.computePosition(measurements);
+
     Point<double> estRecLLA = ecefToLla(estRec.pos);
 
 
@@ -160,6 +163,23 @@ void TrilaterationNode::fixEcefCallback(const iri_common_drivers_msgs::NavSatFix
             counterReal = 0;
         }
         counterReal++;
+    }
+}
+void TrilaterationNode::fixLlaCallback(const sensor_msgs::NavSatFix::ConstPtr &msg)
+{
+    std::cout << "%%%%  FIX LLA = (" << msg->latitude << ", " << msg->longitude << ", " << msg->altitude << ")\n";
+    lastFixLLA.setX(msg->latitude * 180/M_PI);
+    lastFixLLA.setY(msg->longitude * 180/M_PI);
+    lastFixLLA.setZ(msg->altitude);
+
+    if(saveOnDisk)
+    {
+        if(counterLLA==SAMPLING_RATE)
+        {
+            writeOnFile(PATH_LLA, lastFixLLA);
+            counterLLA = 0;
+        }
+        counterLLA++;
     }
 }
 

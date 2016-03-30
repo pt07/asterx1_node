@@ -20,7 +20,7 @@
 <node pkg="rosbag"
       type="play"
       name="rosbag"
-      args="-d 0 -r 100 --clock -k $(arg bag_file_name2)"/>
+      args="-d 0 -r 100 --clock -k $(arg bag_file_name5)"/>
 
 <param name="use_sim_time" value="true" />
 	

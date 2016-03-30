@@ -33,6 +33,7 @@ public:
     void fixEcefCallback(const iri_common_drivers_msgs::NavSatFix_ecef::ConstPtr &msg);
     void raimEcefCallback(const iri_common_drivers_msgs::NavSatFix_ecef::ConstPtr &msg);
     void wolfEcefCallback(const iri_common_drivers_msgs::NavSatFix_ecef::ConstPtr &msg);
+    void fixLlaCallback(const sensor_msgs::NavSatFix::ConstPtr &msg);
 
     Point<double> ecefToLla(double x, double y, double z);
     Point<double> ecefToLla(const Point<double> &ecef);
@@ -54,11 +55,13 @@ protected:
     const std::string PATH_EST_POS = "/home/ptirindelli/Desktop/gps_visualizer/est.txt";
     const std::string PATH_RAIM_POS = "/home/ptirindelli/Desktop/gps_visualizer/raim.txt";
     const std::string PATH_WOLF_POS = "/home/ptirindelli/Desktop/gps_visualizer/wolf.txt";
+    const std::string PATH_LLA = "/home/ptirindelli/Desktop/gps_visualizer/lla.txt";
 
     int counterReal = 0;
     int counterEst = 0;
     int counterRaim = 0;
     int counterWolf = 0;
+    int counterLLA = 0;
     const int SAMPLING_RATE = 1;
 
 protected:
@@ -66,6 +69,7 @@ protected:
     Point<double> lastFixECEF;
     Point<double> lastRaimECEF;
     Point<double> lastWolfECEF;
+    Point<double> lastFixLLA;
 
     // ROS node handle
     ros::NodeHandle nh;
@@ -75,6 +79,7 @@ protected:
     ros::Subscriber fixEcefSub; // fix ecef subscriber
     ros::Subscriber raimEcefSub; // raim ecef subscriber
     ros::Subscriber wolfEcefSub; // wolf ecef subscriber
+    ros::Subscriber llaSub; // fix lla subscriber
 
     // Publisher
     ros::Publisher estFixPub;

@@ -22,6 +22,7 @@ find_package(catkin REQUIRED COMPONENTS
         visualization_msgs
         tf
         nav_msgs
+        iri_common_drivers_msgs
 )
 
 #TODO togliere le cose che c'entrano con i marker, tf e odometry
@@ -120,9 +121,9 @@ FIND_LIBRARY(gpstk_LIBRARY REQUIRED
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
-#catkin_package(
-#    CATKIN_DEPENDS message_runtime
-#)
+catkin_package(
+    CATKIN_DEPENDS message_runtime iri_common_drivers_msgs
+)
 
 catkin_package(
 #  INCLUDE_DIRS include

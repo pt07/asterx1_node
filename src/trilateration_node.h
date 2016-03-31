@@ -38,6 +38,8 @@ public:
     Point<double> ecefToLla(double x, double y, double z);
     Point<double> ecefToLla(const Point<double> &ecef);
 
+    Receiver computePosition(std::vector<SatelliteMeasurement> &measurements);
+
 protected:
     /*
      * Just for debug purpose.
@@ -70,6 +72,11 @@ protected:
     Point<double> lastRaimECEF;
     Point<double> lastWolfECEF;
     Point<double> lastFixLLA;
+
+
+    //TODO TEMP!!!!!
+    Point<double> errore;
+    int tot=0;
 
     // ROS node handle
     ros::NodeHandle nh;

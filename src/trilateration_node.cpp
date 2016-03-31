@@ -29,6 +29,8 @@ TrilaterationNode::TrilaterationNode():
     myfile.open(PATH_WOLF_POS);  myfile<<"latitude,longitude,altitude\n";   myfile.close();
     myfile.open(PATH_LLA);  myfile<<"latitude,longitude,altitude\n";   myfile.close();
 
+    errore = Point<double>(0, 0, 0);
+
 }
 
 
@@ -62,11 +64,7 @@ void TrilaterationNode::pseudorangeCallback(const iri_common_drivers_msgs::Satel
 
     tr.setVerboseLevel(0);
 
-    Receiver estRec = tr.computePosition(measurements);
-
-    estRec.pos.coords[0] -= 10;
-    estRec.pos.coords[1] -= 30;
-    estRec.pos.coords[2] -= 9;
+    Receiver estRec = computePosition(measurements);
 
     Point<double> estRecLLA = ecefToLla(estRec.pos);
 
@@ -77,6 +75,11 @@ void TrilaterationNode::pseudorangeCallback(const iri_common_drivers_msgs::Satel
     std::cout << "      raim error:\t  " << estRec.pos.distanceTo(lastRaimECEF) << std::endl;
     std::cout << "     (LLA)  real:\t " << (ecefToLla(lastFixECEF)).toString() << std::endl;
     std::cout << "     (LLA)   est:\t " << estRecLLA.toString() << std::endl;
+
+    tot++;
+    errore = errore + (estRec.pos + -lastFixECEF);
+    Point<double> errore_medio(errore.coords[0]/tot, errore.coords[1]/tot, errore.coords[2]/tot);
+    std::cout << "   errore medio:\t " << errore_medio.toString() << std::endl;
 
     if(saveOnDisk)
     {
@@ -219,6 +222,16 @@ void TrilaterationNode::wolfEcefCallback(const iri_common_drivers_msgs::NavSatFi
     }
 }
 
+Receiver TrilaterationNode::computePosition(std::vector<SatelliteMeasurement> &measurements)
+{
+    Receiver estRec = tr.computePosition(measurements);
+
+    estRec.pos = estRec.pos + Point<double>(-11, -30.2, -10.45);
+//    estRec.pos = estRec.pos + Point<double>(-10, -30, -9);//valori buoni
+//    estRec.pos = estRec.pos + Point<double>(-11, -30.2, -10.45);//valori ok in 2D
+
+    return estRec;
+}
 
 bool TrilaterationNode::writeOnFile(std::string path, Point<double> p)
 {

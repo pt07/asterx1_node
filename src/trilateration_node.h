@@ -73,11 +73,6 @@ protected:
     Point<double> lastWolfECEF;
     Point<double> lastFixLLA;
 
-
-    //TODO TEMP!!!!!
-    Point<double> errore;
-    int tot=0;
-
     // ROS node handle
     ros::NodeHandle nh;
 

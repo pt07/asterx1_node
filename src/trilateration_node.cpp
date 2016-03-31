@@ -27,10 +27,7 @@ TrilaterationNode::TrilaterationNode():
     myfile.open(PATH_RAIM_POS);  myfile<<"latitude,longitude,altitude\n";   myfile.close();
     myfile.open(PATH_REAL_POS);  myfile<<"latitude,longitude,altitude\n";   myfile.close();
     myfile.open(PATH_WOLF_POS);  myfile<<"latitude,longitude,altitude\n";   myfile.close();
-    myfile.open(PATH_LLA);  myfile<<"latitude,longitude,altitude\n";   myfile.close();
-
-    errore = Point<double>(0, 0, 0);
-
+    myfile.open(PATH_LLA);       myfile<<"latitude,longitude,altitude\n";   myfile.close();
 }
 
 
@@ -76,11 +73,6 @@ void TrilaterationNode::pseudorangeCallback(const iri_common_drivers_msgs::Satel
     std::cout << "     (LLA)  real:\t " << (ecefToLla(lastFixECEF)).toString() << std::endl;
     std::cout << "     (LLA)   est:\t " << estRecLLA.toString() << std::endl;
 
-    tot++;
-    errore = errore + (estRec.pos + -lastFixECEF);
-    Point<double> errore_medio(errore.coords[0]/tot, errore.coords[1]/tot, errore.coords[2]/tot);
-    std::cout << "   errore medio:\t " << errore_medio.toString() << std::endl;
-
     if(saveOnDisk)
     {
         if(counterEst % sampling_rate_est == 0)
@@ -118,8 +110,7 @@ void TrilaterationNode::pseudorangeCallback(const iri_common_drivers_msgs::Satel
     {
         std::cout << "bad estimation" << std::endl;
     } else {
-        // Sets the guess for the next simulation in the actual position
-        //TODO vedi se serve effetivamente
+        // Sets the guess for the next simulation in the actual position TODO vedi se serve effetivamente
         tr.setInitialReceiverGuess(estRec);
 
         // publish result
@@ -225,11 +216,6 @@ void TrilaterationNode::wolfEcefCallback(const iri_common_drivers_msgs::NavSatFi
 Receiver TrilaterationNode::computePosition(std::vector<SatelliteMeasurement> &measurements)
 {
     Receiver estRec = tr.computePosition(measurements);
-
-    estRec.pos = estRec.pos + Point<double>(-11, -30.2, -10.45);
-//    estRec.pos = estRec.pos + Point<double>(-10, -30, -9);//valori buoni
-//    estRec.pos = estRec.pos + Point<double>(-11, -30.2, -10.45);//valori ok in 2D
-
     return estRec;
 }
 
@@ -257,9 +243,7 @@ bool TrilaterationNode::writeOnFile(std::string path, double x, double y, double
         return true;
     }
     else
-    {
         std::cout << "ERRORE in scrittura " << p.toString() << "\n";
-    }
 
     return false;
 }
